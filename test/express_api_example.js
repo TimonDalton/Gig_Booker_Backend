@@ -2,15 +2,15 @@
 //http://expressjs.com/en/resources/middleware/session.html
 
 // var escapeHtml = require('escape-html')
-var express = require('express')
-var session = require('express-session')
+const express = require('express')
+const session = require('express-session')
 
-var app = express()
+const app = express()
 
 app.use(session({
-  secret: 'keyboard cat',
+  secret: 'pwpw',
   resave: false,
-  saveUninitialized: true
+  saveUninitialized: false,
 }))
 
 // middleware to test if authenticated
@@ -20,10 +20,10 @@ function isAuthenticated (req, res, next) {
 }
 
 app.get('/', isAuthenticated, function (req, res) {
-  // this is only called when there is an authentication user due to isAuthenticated
-//   res.send('hello, ' + escapeHtml(req.session.user) + '!' +
-  res.send('hello, ' +req.session.user + '!' +
-    ' <a href="/logout">Logout</a>')
+//   // this is only called when there is an authentication user due to isAuthenticated
+// //   res.send('hello, ' + escapeHtml(req.session.user) + '!' +
+//   res.send('hello, ' +req.session.user + '!' +
+//     ' <a href="/logout">Logout</a>')
 })
 
 app.get('/', function (req, res) {
@@ -39,6 +39,8 @@ app.post('/login', express.urlencoded({ extended: false }), function (req, res) 
 
   // regenerate the session, which is good practice to help
   // guard against forms of session fixation
+  
+  
   req.session.regenerate(function (err) {
     if (err) next(err)
 
@@ -51,7 +53,8 @@ app.post('/login', express.urlencoded({ extended: false }), function (req, res) 
       if (err) return next(err)
       res.redirect('/')
     })
-  })
+  }
+  )
 })
 
 app.get('/logout', function (req, res, next) {
