@@ -4,14 +4,19 @@ const credentials = {
   user: "postgres",
   host: "localhost",
   database: "test_db",
-  password: "Granatabomb5",
+  password: "admin54312",
+  //use this command to change password: ALTER USER postgres WITH PASSWORD 'admin54312';
   port: 5432,
 };
+
+const eventTableName = "test_events_table";
+const organiserTableName = "test_organisers_table";
+const performerTableName = "";
 
 // Connect with a connection pool.
 
 const events_table_init_create_query =  `
-CREATE TABLE IF NOT EXISTS "test_events_table" (
+CREATE TABLE IF NOT EXISTS "${eventTableName}" (
 
     id SERIAL NOT NULL,
     organiser_id INTEGER NOT NULL,
@@ -29,7 +34,7 @@ CREATE TABLE IF NOT EXISTS "test_events_table" (
 );`;
 
 const organisers_table_init_create_query =  `
-CREATE TABLE IF NOT EXISTS "test_organisers_table" (
+CREATE TABLE IF NOT EXISTS "${organiserTableName}" (
 
     id SERIAL,
     name VARCHAR(100) NOT NULL,
@@ -42,14 +47,12 @@ CREATE TABLE IF NOT EXISTS "test_organisers_table" (
 );`;
 
 const insert_str_events = `
-  
-    INSERT INTO test_events_table (name,startime,final_payment,location,location_name,description,status,organiser_id)
+    INSERT INTO "${eventTableName}" (name,startime,final_payment,location,location_name,description,status,organiser_id)
     VALUES ('Loftus Park Jam','2016-06-22 19:10:25-07',2500,'2.4,5.1','Loftus park','Kom speel kitaar. Ons kort kitaar. Soos in ons het n kort kitaar. ','artist undecided',1) 
   ;
 `;
 const insert_str_organisers = `
-
-  INSERT INTO test_organisers_table (name,password,location,location_name,bio)
+  INSERT INTO ${organiserTableName} (name,password,location,location_name,bio)
   VALUES ('Johann SilverHand','JohannSilver12345','2.2,5.1','snooba', 'Ek is staal. Noem my staal skouer man.') 
 ;
 `;
@@ -88,8 +91,13 @@ async function initDB(){
     // console.log("Time with client: " + clientResult.rows[0]["now"]);
   
 }
-
+const tableNames = {
+  eventTable:eventTableName,
+  orgTable:organiserTableName,
+}
 module.exports = {
   initDB:initDB,
+  dbClientPool:pool,
   doQuery:doQuery,
+  tableNames:tableNames,
 }
