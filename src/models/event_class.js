@@ -1,29 +1,44 @@
 const { json } = require("express");
 
-class EventOrganiser{
+class EventObject{
     
     constructor(json){
         if (json){
             return this.fromJSON(json);
         }
         this.id = -1;
+        this.organiserId = "";
         this.name = "";
-        this.password = "";
-        this.bio = "";
-        this.creditCardDetails = "";
+        this.payment = "";
+        this.startTime = "";
+        this.duration = "";
+        this.location = "";
+        this.locationName = "";
+        this.description = "";
+        this.status = "";
         return this;
     }
     fromJSON(json){
+        if(json["id"])
+            this.id = json["id"];
         if(json["organiserId"])
             this.id = json["organiserId"];
-        if(json["username"])
-            this.name = json["username"];
-        if(json["password"])
-            this.password = json["password"];
-        if(json["bio"])
-            this.bio = json["bio"];
-        if(json["creditCardDetails"])
-            this.creditCardDetails = json["creditCardDetails"];
+        if(json["name"])
+            this.id = json["name"];
+        if(json["payment"])
+            this.id = json["payment"];
+        if(json["startTime"])
+            this.id = json["startTime"];
+        if(json["duration"])
+            this.id = json["duration"];
+        if(json["location"])
+            this.id = json["location"];
+        if(json["locationName"])
+            this.id = json["locationName"];
+        if(json["description"])
+            this.id = json["description"];
+        if(json["status"])
+            this.id = json["status"];
         return this;
     }
     listFromJSON(listJson){
@@ -37,5 +52,5 @@ class EventOrganiser{
 }
 
 module.exports = {
-    EventOrganiser:EventOrganiser,
+    EventObject:EventObject,
 }

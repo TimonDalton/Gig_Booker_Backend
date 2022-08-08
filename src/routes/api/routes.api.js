@@ -2,6 +2,7 @@ const {doQuery,tableNames} = require("../../configs/db.config");
 var bodyParser = require('body-parser')
 var jsonParser = bodyParser.json()
 const  {EventOrganiser} = require('../../models/eventOrganiser_class');
+const  {EventObject} = require('../../models/event_class');
 
 function apply_api_routes(app){
 
@@ -14,11 +15,18 @@ function apply_api_routes(app){
         let respJson = JSON.stringify(data.rows)
         res.send(respJson);
     });
-    
-    app.post('/api/createEvent',function(req,res,next){
+    function a (req,res,next){
+        console.log("----------------------------------------------------");
+        console.log(req);
+        next();
+    }
+    // app.post('/api/createEvent',a);
+    app.post('/api/createEvent',jsonParser,function(req,res,next){
+        console.log("HERE");
         let data = req.body;
-        let eventObj = new eventObj();
-        orgLogin.createFromJSON(req.body);
+        let eventObj = new EventObject();
+        console.log(req.body);
+        eventObj.fromJSON(req.body);
     
     
         console.log(`api/createEvent post request body:`);
