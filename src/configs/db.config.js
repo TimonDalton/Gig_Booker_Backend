@@ -4,7 +4,7 @@ const credentials = {
   user: "postgres",
   host: "localhost",
   database: "test_db",
-  password: "admin54312",
+  password: "admin",
   //use this command to change password: ALTER USER postgres WITH PASSWORD 'admin54312';
   port: 5432,
 };

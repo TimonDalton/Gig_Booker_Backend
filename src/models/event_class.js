@@ -21,24 +21,31 @@ class EventObject{
     fromJSON(json){
         if(json["id"])
             this.id = json["id"];
-        if(json["organiserId"])
-            this.id = json["organiserId"];
+        if(json["organiserId"]){
+            console.log(`found organiserId of ${json["organiserId"]}`);
+            this.organiserId = json["organiserId"];
+        }else{
+            console.log(`Didn't find organiserId in`);
+            console.log(json);
+        }
         if(json["name"])
-            this.id = json["name"];
+            this.name = json["name"];
         if(json["payment"])
-            this.id = json["payment"];
+            this.payment = json["payment"];
         if(json["startTime"])
-            this.id = json["startTime"];
+            this.startTime = json["startTime"];
         if(json["duration"])
-            this.id = json["duration"];
+            this.duration = json["duration"];
         if(json["location"])
-            this.id = json["location"];
+            this.location = {'lat':3,'long':4};
         if(json["locationName"])
-            this.id = json["locationName"];
+            this.locationName = json["locationName"];
         if(json["description"])
-            this.id = json["description"];
+            this.description = json["description"];
         if(json["status"])
-            this.id = json["status"];
+            this.status = json["status"];
+        console.log("FROMJson result:");
+        console.log(this);
         return this;
     }
     listFromJSON(listJson){

@@ -21,14 +21,37 @@ function apply_api_routes(app){
         next();
     }
     // app.post('/api/createEvent',a);
-    app.post('/api/createEvent',jsonParser,function(req,res,next){
+    app.post('/api/createEvent',jsonParser,async function(req,res,next){
         console.log("HERE");
         let data = req.body;
         let eventObj = new EventObject();
         console.log(req.body);
         eventObj.fromJSON(req.body);
+        console.log("Object going to DB:");
+        console.log(eventObj);
+        const insert_statement = `
+            INSERT INTO ${tableNames.eventTable} (organiser_id,  name,               final_payment,         location,               location_name,              description,                status) 
+            VALUES(                   '${eventObj.organiserId}','${eventObj.name}','${eventObj.payment}','${eventObj.location["lat"]},${eventObj.location["long"]}','${eventObj.locationName}','${eventObj.description}','${eventObj.status}');
+        `;
+
+
+        // this.id = -1;
+        // this.organiserId = "";
+        // this.name = "";
+        // this.payment = "";
+        // this.startTime = "";
+        // this.duration = "";
+        // this.location = "";
+        // this.locationName = "";
+        // this.description = "";
+        // this.status = "";
     
-    
+        try {
+            await doQuery(insert_statement);
+        } catch (error) {
+            console.log("READ TO DB ERROR ON CREATE EVENT");
+            console.log(error);
+        }
         console.log(`api/createEvent post request body:`);
         console.log(data);
         res.send(data);
