@@ -6,10 +6,11 @@ const  {EventObject} = require('../../models/event_class');
 
 function apply_api_routes(app){
 
+    //This will fetch all events
     app.get('/api/getEvent',jsonParser,async function(req,res,next){
         res.contentType('application/json');
-        let data = await doQuery(`SELECT * FROM ${tableNames.orgTable}`);
-        console.log(`data rows:`);
+        let data = await doQuery(`SELECT * FROM ${tableNames.eventTable}`);
+        console.log(`/api/getEvent: data rows:`);
         console.log(data.rows);
     
         let respJson = JSON.stringify(data.rows)
