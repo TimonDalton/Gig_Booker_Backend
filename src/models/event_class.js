@@ -18,6 +18,7 @@ class EventObject{
         this.status = "";
         return this;
     }
+    //This converts a JSON into an event object
     fromJSON(json){
         if(json["id"])
             this.id = json["id"];
@@ -44,8 +45,6 @@ class EventObject{
             this.description = json["description"];
         if(json["status"])
             this.status = json["status"];
-        console.log("FROMJson result:");
-        console.log(this);
         return this;
     }
     listFromJSON(listJson){

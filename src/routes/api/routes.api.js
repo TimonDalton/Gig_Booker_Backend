@@ -21,31 +21,17 @@ function apply_api_routes(app){
         console.log(req);
         next();
     }
-    // app.post('/api/createEvent',a);
+    //Here a new event will be created and the information from the JSON will be inserted
     app.post('/api/createEvent',jsonParser,async function(req,res,next){
-        console.log("HERE");
-        let data = req.body;
-        let eventObj = new EventObject();
+        console.log("CreateEvent in Backend/routes/api/routes.api.js");
+        console.log("This is the received JSON request:");
         console.log(req.body);
-        eventObj.fromJSON(req.body);
-        console.log("Object going to DB:");
-        console.log(eventObj);
+        let data = req.body;
+        //Why are these values all strings
         const insert_statement = `
-            INSERT INTO ${tableNames.eventTable} (organiser_id,  name,               final_payment,         location,               location_name,              description,                status) 
-            VALUES(                   '${eventObj.organiserId}','${eventObj.name}','${eventObj.payment}','${eventObj.location["lat"]},${eventObj.location["long"]}','${eventObj.locationName}','${eventObj.description}','${eventObj.status}');
+            INSERT INTO ${tableNames.eventTable} (organiser_id,  name, final_payment, location, location_name, description, status)
+            VALUES('${data["organiserId"]}','${data["name"]}','${data["payment"]}','${3},${4}','${data["locationName"]}','${data["description"]}','${data["status"]}');  
         `;
-
-
-        // this.id = -1;
-        // this.organiserId = "";
-        // this.name = "";
-        // this.payment = "";
-        // this.startTime = "";
-        // this.duration = "";
-        // this.location = "";
-        // this.locationName = "";
-        // this.description = "";
-        // this.status = "";
     
         try {
             await doQuery(insert_statement);
@@ -54,7 +40,7 @@ function apply_api_routes(app){
             console.log(error);
         }
         console.log(`api/createEvent post request body:`);
-        console.log(data);
+        console.log('Sending back received data');
         res.send(data);
     });
     
