@@ -29,8 +29,8 @@ function apply_api_routes(app){
         let data = req.body;
         //Why are these values all strings
         const insert_statement = `
-            INSERT INTO ${tableNames.eventTable} (organiser_id,  name, final_payment, location, location_name, description, status)
-            VALUES('${data["organiserId"]}','${data["name"]}','${data["payment"]}','${3},${4}','${data["locationName"]}','${data["description"]}','${data["status"]}');  
+            INSERT INTO ${tableNames.eventTable} (organiser_id,  name, starttime, final_payment, location, location_name, description, status)
+            VALUES('${data["organiserId"]}','${data["name"]}','${data["startTime"]}','${data["payment"]}','${3},${4}','${data["locationName"]}','${data["description"]}','${data["status"]}');  
         `;
     
         try {

@@ -21,7 +21,7 @@ CREATE TABLE IF NOT EXISTS "${eventTableName}" (
     id SERIAL NOT NULL,
     organiser_id INTEGER NOT NULL,
     name VARCHAR(100) NOT NULL,
-    startime  timestamp,
+    starttime  timestamp,
     final_payment NUMERIC(8,2),
 
     location POINT,
