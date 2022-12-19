@@ -48,8 +48,8 @@ CREATE TABLE IF NOT EXISTS "${organiserTableName}" (
     PRIMARY KEY ("id")
 );`;
 
-const chats_table_init_create_query =  `
-CREATE TABLE IF NOT EXISTS "${chatsTableName}" (
+const chat_table_init_create_query =  `
+CREATE TABLE IF NOT EXISTS "${chatTableName}" (
 
     id SERIAL,
     organiser_id INTEGER NOT NULL,
@@ -89,7 +89,7 @@ async function initDB(){
     
     await doQuery(organisers_table_init_create_query);
 
-    await doQuery(chats_table_init_create_query);
+    await doQuery(chat_table_init_create_query);
 
     // await doQuery(insert_str_events);
 
