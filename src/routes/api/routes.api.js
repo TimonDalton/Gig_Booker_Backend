@@ -148,6 +148,7 @@ function apply_api_routes(app){
 
     app.get('/api/getMessages',jsonParser,async function(req,res,next){
         res.contentType('application/json');
+        //Here we should filter by column
         let data = await doQuery(`SELECT * FROM ${tableNames.messageTable}`);
         console.log(`/api/getMessages: data rows:`);
         console.log(data.rows);
@@ -164,7 +165,7 @@ function apply_api_routes(app){
         let data = req.body;
         
         const insert_statement = `
-            INSERT INTO ${tableNames.messageTable} (organiser_id, chat_id, message, time_sent, user_sender)
+            INSERT INTO ${tableNames.messageTable} (organiser_id, chat_id, message, time_sent, user_sent)
             VALUES('${data["organiserId"]}','${data["chatId"]}','${data["message"]}','${data["timeSent"]}','${data["userSender"]}');  
         `;
     
