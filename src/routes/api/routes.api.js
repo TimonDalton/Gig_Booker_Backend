@@ -21,6 +21,9 @@ function apply_api_routes(app){
         console.log(req);
         next();
     }
+
+
+    
     //Here a new event will be created and the information from the JSON will be inserted
     app.post('/api/createEvent',jsonParser,async function(req,res,next){
         console.log("CreateEvent in Backend/routes/api/routes.api.js");

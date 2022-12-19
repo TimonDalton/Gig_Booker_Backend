@@ -52,6 +52,7 @@ const chats_table_init_create_query =  `
 CREATE TABLE IF NOT EXISTS "${chatsTableName}" (
 
     id SERIAL,
+    organiser_id INTEGER NOT NULL,
     name VARCHAR(100) NOT NULL,
 
     PRIMARY KEY ("id")
