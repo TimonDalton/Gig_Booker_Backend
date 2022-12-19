@@ -13,7 +13,7 @@ const eventTableName = "test_events_table";
 const organiserTableName = "test_organisers_table";
 const performerTableName = "";
 const chatTableName = "test_chats_table"; //This holds a list of contacts that user is chatting with
-const messagesTableName = "test_messages_table";//This holds the messages that are exchanged between two contacts
+const messageTableName = "test_messages_table";//This holds the messages that are exchanged between two contacts
 
 // Connect with a connection pool.
 
@@ -51,12 +51,32 @@ CREATE TABLE IF NOT EXISTS "${organiserTableName}" (
 const chat_table_init_create_query =  `
 CREATE TABLE IF NOT EXISTS "${chatTableName}" (
 
-    id SERIAL,
+    chat_id INT GENERATED ALWAYS AS IDENTITY,
     organiser_id INTEGER NOT NULL,
     name VARCHAR(100) NOT NULL,
 
-    PRIMARY KEY ("id")
+    PRIMARY KEY ("chat_id")
 );`;
+
+const message_table_init_create_query =  `
+CREATE TABLE IF NOT EXISTS "${messageTableName}" (
+
+    message_id INT GENERATED ALWAYS AS IDENTITY,
+    chat_id INT,
+    organiser_id INTEGER NOT NULL,
+    message VARCHAR(2000) NOT NULL,
+    time_sent timestamp,
+    user_sender BOOLEAN NOT NULL,
+
+    PRIMARY KEY ("message_id"),
+    CONSTRAINT chat_fk
+      FOREIGN KEY("chat_id") 
+	      REFERENCES test_chats_table("chat_id")
+        ON DELETE CASCADE
+);`;
+//the on delete cascade means that if parent table entry is deleted then all child table entries will be deleted.
+//So if chat is deleted then all messages will also be deleted
+//DO NOTE: If parent table already exists this command will not work. So then parent table must be deleted to create child table
 
 const insert_str_events = `
     INSERT INTO "${eventTableName}" (name,startime,final_payment,location,location_name,description,status,organiser_id)
@@ -91,6 +111,8 @@ async function initDB(){
 
     await doQuery(chat_table_init_create_query);
 
+    await doQuery(message_table_init_create_query);
+
     // await doQuery(insert_str_events);
 
     // await doQuery(insert_str_organisers);
@@ -109,6 +131,7 @@ const tableNames = {
   eventTable:eventTableName,
   orgTable:organiserTableName,
   chatTable:chatTableName,
+  messageTable:messageTableName,
 }
 module.exports = {
   initDB:initDB,
