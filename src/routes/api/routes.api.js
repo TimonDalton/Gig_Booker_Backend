@@ -23,7 +23,7 @@ function apply_api_routes(app){
     }
 
 
-    
+
     //Here a new event will be created and the information from the JSON will be inserted
     app.post('/api/createEvent',jsonParser,async function(req,res,next){
         console.log("CreateEvent in Backend/routes/api/routes.api.js");
@@ -134,6 +134,38 @@ function apply_api_routes(app){
         const insert_statement = `
             INSERT INTO ${tableNames.chatTable} (organiser_id,  name)
             VALUES('${data["organiserId"]}','${data["name"]}');  
+        `;
+    
+        try {
+            await doQuery(insert_statement);
+        } catch (error) {
+            console.log("READ TO DB ERROR ON CREATE CHAT");
+            console.log(error);
+        }
+        console.log('Sending back received data');
+        res.send(data);
+    });
+
+    app.get('/api/getMessages',jsonParser,async function(req,res,next){
+        res.contentType('application/json');
+        let data = await doQuery(`SELECT * FROM ${tableNames.messageTable}`);
+        console.log(`/api/getMessages: data rows:`);
+        console.log(data.rows);
+    
+        let respJson = JSON.stringify(data.rows)
+        res.send(respJson);
+    });
+    
+    //This will allow us to add a message to the messages table
+    app.post('/api/createMessage',jsonParser,async function(req,res,next){
+        console.log("CreateMessage in Backend/routes/api/routes.api.js");
+        console.log("This is the received JSON request:");
+        console.log(req.body);
+        let data = req.body;
+        
+        const insert_statement = `
+            INSERT INTO ${tableNames.messageTable} (organiser_id, chat_id, message, time_sent, user_sender)
+            VALUES('${data["organiserId"]}','${data["chatId"]}','${data["message"]}','${data["timeSent"]}','${data["userSender"]}');  
         `;
     
         try {
