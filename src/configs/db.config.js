@@ -12,6 +12,8 @@ const credentials = {
 const eventTableName = "test_events_table";
 const organiserTableName = "test_organisers_table";
 const performerTableName = "";
+const chatTableName = "test_chats_table"; //This holds a list of contacts that user is chatting with
+const messagesTableName = "test_messages_table";//This holds the messages that are exchanged between two contacts
 
 // Connect with a connection pool.
 
@@ -42,6 +44,15 @@ CREATE TABLE IF NOT EXISTS "${organiserTableName}" (
     location POINT,
     location_name varchar(200),
     bio varchar(2000),
+
+    PRIMARY KEY ("id")
+);`;
+
+const chats_table_init_create_query =  `
+CREATE TABLE IF NOT EXISTS "${chatsTableName}" (
+
+    id SERIAL,
+    name VARCHAR(100) NOT NULL,
 
     PRIMARY KEY ("id")
 );`;
@@ -77,6 +88,8 @@ async function initDB(){
     
     await doQuery(organisers_table_init_create_query);
 
+    await doQuery(chats_table_init_create_query);
+
     // await doQuery(insert_str_events);
 
     // await doQuery(insert_str_organisers);
@@ -94,6 +107,7 @@ async function initDB(){
 const tableNames = {
   eventTable:eventTableName,
   orgTable:organiserTableName,
+  chatTable:chatTableName,
 }
 module.exports = {
   initDB:initDB,

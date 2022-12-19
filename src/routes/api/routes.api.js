@@ -39,7 +39,6 @@ function apply_api_routes(app){
             console.log("READ TO DB ERROR ON CREATE EVENT");
             console.log(error);
         }
-        console.log(`api/createEvent post request body:`);
         console.log('Sending back received data');
         res.send(data);
     });
@@ -110,6 +109,40 @@ function apply_api_routes(app){
             res.status(200).json({"message":"Account Created"});
         }
     });
+
+    //This fetches all contacts that the user is chatting with
+    app.get('/api/getChats',jsonParser,async function(req,res,next){
+        res.contentType('application/json');
+        let data = await doQuery(`SELECT * FROM ${tableNames.chatTable}`);
+        console.log(`/api/getChats: data rows:`);
+        console.log(data.rows);
+    
+        let respJson = JSON.stringify(data.rows)
+        res.send(respJson);
+    });
+    
+    //This will allow us to add a contacts information to the chat table
+    app.post('/api/createChat',jsonParser,async function(req,res,next){
+        console.log("CreateChat in Backend/routes/api/routes.api.js");
+        console.log("This is the received JSON request:");
+        console.log(req.body);
+        let data = req.body;
+        
+        const insert_statement = `
+            INSERT INTO ${tableNames.chatTable} (organiser_id,  name)
+            VALUES('${data["organiserId"]}','${data["name"]}');  
+        `;
+    
+        try {
+            await doQuery(insert_statement);
+        } catch (error) {
+            console.log("READ TO DB ERROR ON CREATE CHAT");
+            console.log(error);
+        }
+        console.log('Sending back received data');
+        res.send(data);
+    });
+    
 }
 
 module.exports = {
