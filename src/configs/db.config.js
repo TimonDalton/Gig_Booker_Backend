@@ -66,7 +66,7 @@ CREATE TABLE IF NOT EXISTS "${messageTableName}" (
     organiser_id INTEGER NOT NULL,
     message VARCHAR(2000) NOT NULL,
     time_sent timestamp,
-    user_sender BOOLEAN NOT NULL,
+    user_sent BOOLEAN NOT NULL,
 
     PRIMARY KEY ("message_id"),
     CONSTRAINT chat_fk
@@ -77,6 +77,7 @@ CREATE TABLE IF NOT EXISTS "${messageTableName}" (
 //the on delete cascade means that if parent table entry is deleted then all child table entries will be deleted.
 //So if chat is deleted then all messages will also be deleted
 //DO NOTE: If parent table already exists this command will not work. So then parent table must be deleted to create child table
+//Also NOTE: I do not think it is needed to use a foreign table here
 
 const insert_str_events = `
     INSERT INTO "${eventTableName}" (name,startime,final_payment,location,location_name,description,status,organiser_id)

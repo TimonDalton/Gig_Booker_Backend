@@ -163,10 +163,11 @@ function apply_api_routes(app){
         console.log("This is the received JSON request:");
         console.log(req.body);
         let data = req.body;
+
         
         const insert_statement = `
             INSERT INTO ${tableNames.messageTable} (organiser_id, chat_id, message, time_sent, user_sent)
-            VALUES('${data["organiserId"]}','${data["chatId"]}','${data["message"]}','${data["timeSent"]}','${data["userSender"]}');  
+            VALUES('${data["organiserId"]}','${data["chatId"]}','${data["message"]}','${data["time_sent"]}',${data["user_sent"]});  
         `;
     
         try {
