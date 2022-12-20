@@ -170,6 +170,30 @@ function apply_api_routes(app){
         res.send(data);
     });
 
+
+    //Here a chat will be deleted
+    app.delete('/api/deleteChat',jsonParser,async function(req,res,next){
+        console.log("deleteChat in Backend/routes/api/routes.api.js");
+        console.log("This is the received JSON request:");
+        console.log(req.body);
+        let data = req.body;
+        
+        const delete_statement = `
+            DELETE FROM ${tableNames.chatTable}
+            WHERE chat_id = '${data["id"]}' 
+        `;
+    
+        try {
+            await doQuery(delete_statement);
+        } catch (error) {
+            console.log("READ TO DB ERROR ON CREATE EVENT");
+            console.log(error);
+        }
+        console.log('Sending back received data');
+        res.send(data);
+    });
+
+
     app.get('/api/getMessages',jsonParser,async function(req,res,next){
         res.contentType('application/json');
 
