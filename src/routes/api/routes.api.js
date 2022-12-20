@@ -62,7 +62,40 @@ function apply_api_routes(app){
         try {
             await doQuery(delete_statement);
         } catch (error) {
-            console.log("READ TO DB ERROR ON CREATE EVENT");
+            console.log("READ TO DB ERROR ON delete EVENT");
+            console.log(error);
+        }
+        console.log('Sending back received data');
+        res.send(data);
+    });
+
+
+    //Here an event will be edited
+    app.put('/api/editEvent',jsonParser,async function(req,res,next){
+        console.log("editEvent in Backend/routes/api/routes.api.js");
+        console.log("This is the received JSON request:");
+        console.log(req.body);
+        let data = req.body;
+        
+        // const edit_statement = `
+        //     DELETE FROM ${tableNames.eventTable}
+        //     WHERE id = '${data["id"]}' 
+        // `;
+        const edit_statement = `
+            UPDATE ${tableNames.eventTable}
+            SET name = '${data["name"]}',
+                starttime = '${data["startTime"]}',
+                final_payment = '${data["payment"]}',
+                location = '${3},${4}',
+                location_name = '${data["locationName"]}',
+                description = '${data["description"]}',
+                status = '${data["status"]}'
+            WHERE id = '${data["id"]}'
+        `;
+        try {
+            await doQuery(edit_statement);
+        } catch (error) {
+            console.log("READ TO DB ERROR ON Edit EVENT");
             console.log(error);
         }
         console.log('Sending back received data');
