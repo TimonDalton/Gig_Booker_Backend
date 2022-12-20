@@ -148,6 +148,7 @@ function apply_api_routes(app){
 
     app.get('/api/getMessages',jsonParser,async function(req,res,next){
         res.contentType('application/json');
+
         //Here we should filter by column
         let data = await doQuery(`SELECT * FROM ${tableNames.messageTable}`);
         console.log(`/api/getMessages: data rows:`);
