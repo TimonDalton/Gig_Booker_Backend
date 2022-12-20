@@ -30,7 +30,7 @@ function apply_api_routes(app){
         console.log("This is the received JSON request:");
         console.log(req.body);
         let data = req.body;
-        //Why are these values all strings
+        
         const insert_statement = `
             INSERT INTO ${tableNames.eventTable} (organiser_id,  name, starttime, final_payment, location, location_name, description, status)
             VALUES('${data["organiserId"]}','${data["name"]}','${data["startTime"]}','${data["payment"]}','${3},${4}','${data["locationName"]}','${data["description"]}','${data["status"]}');  
@@ -45,6 +45,30 @@ function apply_api_routes(app){
         console.log('Sending back received data');
         res.send(data);
     });
+
+
+    //Here an event will be deleted
+    app.delete('/api/deleteEvent',jsonParser,async function(req,res,next){
+        console.log("deleteEvent in Backend/routes/api/routes.api.js");
+        console.log("This is the received JSON request:");
+        console.log(req.body);
+        let data = req.body;
+        
+        const delete_statement = `
+            DELETE FROM ${tableNames.eventTable}
+            WHERE id = '${data["id"]}' 
+        `;
+ 
+        try {
+            await doQuery(delete_statement);
+        } catch (error) {
+            console.log("READ TO DB ERROR ON CREATE EVENT");
+            console.log(error);
+        }
+        console.log('Sending back received data');
+        res.send(data);
+    });
+
     
     app.post('/api/login',jsonParser,async function(req,res,next){
         let orgLogin = new EventOrganiser();
