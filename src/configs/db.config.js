@@ -20,8 +20,8 @@ const messageTableName = "test_messages_table";//This holds the messages that ar
 const events_table_init_create_query =  `
 CREATE TABLE IF NOT EXISTS "${eventTableName}" (
 
-    id SERIAL NOT NULL,
-    organiser_id INTEGER NOT NULL,
+    event_id INT GENERATED ALWAYS AS IDENTITY,
+    organiser_id INT,
     name VARCHAR(100) NOT NULL,
     starttime  timestamp,
     final_payment NUMERIC(8,2),
@@ -32,30 +32,38 @@ CREATE TABLE IF NOT EXISTS "${eventTableName}" (
 
     status VARCHAR(100),
 
-    PRIMARY KEY ("id")
+    PRIMARY KEY ("event_id"),
+    CONSTRAINT organiser_fk
+      FOREIGN KEY("organiser_id") 
+	      REFERENCES test_organiser_table("organiser_id")
+        ON DELETE CASCADE
 );`;
 
 const organisers_table_init_create_query =  `
 CREATE TABLE IF NOT EXISTS "${organiserTableName}" (
 
-    id SERIAL,
+    organiser_id INT GENERATED ALWAYS AS IDENTITY,
     name VARCHAR(100) NOT NULL,
     password VARCHAR(100) NOT NULL,
     location POINT,
     location_name varchar(200),
     bio varchar(2000),
 
-    PRIMARY KEY ("id")
+    PRIMARY KEY ("organiser_id")
 );`;
 
 const chat_table_init_create_query =  `
 CREATE TABLE IF NOT EXISTS "${chatTableName}" (
 
     chat_id INT GENERATED ALWAYS AS IDENTITY,
-    organiser_id INTEGER NOT NULL,
+    organiser_id INT,
     name VARCHAR(100) NOT NULL,
 
-    PRIMARY KEY ("chat_id")
+    PRIMARY KEY ("chat_id"),
+    CONSTRAINT organiser_fk
+      FOREIGN KEY("organiser_id") 
+	      REFERENCES test_organiser_table("organiser_id")
+        ON DELETE CASCADE
 );`;
 
 const message_table_init_create_query =  `
@@ -77,7 +85,7 @@ CREATE TABLE IF NOT EXISTS "${messageTableName}" (
 //the on delete cascade means that if parent table entry is deleted then all child table entries will be deleted.
 //So if chat is deleted then all messages will also be deleted
 //DO NOTE: If parent table already exists this command will not work. So then parent table must be deleted to create child table
-//Also NOTE: I do not think it is needed to use a foreign table here
+
 
 const insert_str_events = `
     INSERT INTO "${eventTableName}" (name,startime,final_payment,location,location_name,description,status,organiser_id)

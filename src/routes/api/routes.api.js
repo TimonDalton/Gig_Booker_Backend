@@ -56,7 +56,7 @@ function apply_api_routes(app){
         
         const delete_statement = `
             DELETE FROM ${tableNames.eventTable}
-            WHERE id = '${data["id"]}' 
+            WHERE event_id = '${data["event_id"]}' 
         `;
  
         try {
@@ -77,10 +77,6 @@ function apply_api_routes(app){
         console.log(req.body);
         let data = req.body;
         
-        // const edit_statement = `
-        //     DELETE FROM ${tableNames.eventTable}
-        //     WHERE id = '${data["id"]}' 
-        // `;
         const edit_statement = `
             UPDATE ${tableNames.eventTable}
             SET name = '${data["name"]}',
@@ -90,7 +86,7 @@ function apply_api_routes(app){
                 location_name = '${data["locationName"]}',
                 description = '${data["description"]}',
                 status = '${data["status"]}'
-            WHERE id = '${data["id"]}'
+            WHERE event_id = '${data["event_id"]}'
         `;
         try {
             await doQuery(edit_statement);
@@ -107,9 +103,7 @@ function apply_api_routes(app){
         let orgLogin = new EventOrganiser();
         orgLogin.createFromJSON(req.body);
         
-        // id SERIAL,
-        // name VARCHAR(100) NOT NULL,
-        // password VARCHAR(100) NOT NULL,
+
         let user_read = {}
         try{
             user_read = await doQuery(`SELECT name,password FROM ${tableNames.orgTable} WHERE name = '${orgLogin.name}'`);
@@ -141,6 +135,8 @@ function apply_api_routes(app){
         let data = req.body
         let postdata = new EventOrganiser();
         postdata.createFromJSON(req.body);
+
+
         let q = `SELECT name FROM ${tableNames.orgTable} WHERE name ='${postdata.name}';`;
         console.log(q);
         let selectRes;
@@ -213,7 +209,7 @@ function apply_api_routes(app){
         
         const delete_statement = `
             DELETE FROM ${tableNames.chatTable}
-            WHERE chat_id = '${data["id"]}' 
+            WHERE chat_id = '${data["chat_id"]}' 
         `;
     
         try {
@@ -249,7 +245,7 @@ function apply_api_routes(app){
         
         const insert_statement = `
             INSERT INTO ${tableNames.messageTable} (organiser_id, chat_id, message, time_sent, user_sent)
-            VALUES('${data["organiserId"]}','${data["chatId"]}','${data["message"]}','${data["time_sent"]}',${data["user_sent"]});  
+            VALUES('${data["organiserId"]}','${data["chat_id"]}','${data["message"]}','${data["time_sent"]}',${data["user_sent"]});  
         `;
     
         try {
