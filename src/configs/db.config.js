@@ -9,8 +9,8 @@ const credentials = {
   port: 5432,
 };
 
-const eventTableName = "test_events_table";
-const organiserTableName = "test_organisers_table";
+const eventTableName = "test_events_table";//This table will hold the information of all events
+const organiserTableName = "test_organisers_table";//This table will hold the information of all organiser users
 const performerTableName = "";
 const chatTableName = "test_chats_table"; //This holds a list of contacts that user is chatting with
 const messageTableName = "test_messages_table";//This holds the messages that are exchanged between two contacts
@@ -107,33 +107,15 @@ async function doQuery(query){
     let now = await pool.query(query);
     return now;
 }
-// async function doQueryWithClient(query,client){
-//     let now = await pool.query(query);
-//     return now;
-//   }
 
 async function initDB(){
     await doQuery(events_table_init_create_query);
-    // await doQuery(insert_str_events);
     
     await doQuery(organisers_table_init_create_query);
 
     await doQuery(chat_table_init_create_query);
 
     await doQuery(message_table_init_create_query);
-
-    // await doQuery(insert_str_events);
-
-    // await doQuery(insert_str_organisers);
-    // await doQuery(insert_str_organisers);
-    // let a = await doQuery(read_all);
-    // console.log(a.rows);
-        
-    // const poolResult = await poolDemo();
-    // console.log("Time with pool: " + poolResult.rows[0]["now"]);
-  
-    // const clientResult = await clientDemo();
-    // console.log("Time with client: " + clientResult.rows[0]["now"]);
   
 }
 const tableNames = {

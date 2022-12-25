@@ -2,7 +2,6 @@ const {doQuery,tableNames} = require("../../configs/db.config");
 var bodyParser = require('body-parser')
 var jsonParser = bodyParser.json()
 const  {EventOrganiser} = require('../../models/eventOrganiser_class');
-const  {EventObject} = require('../../models/event_class');
 
 function apply_api_routes(app){
 
@@ -21,7 +20,6 @@ function apply_api_routes(app){
         console.log(req);
         next();
     }
-
 
 
     //Here a new event will be created and the information from the JSON will be inserted
