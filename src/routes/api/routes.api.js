@@ -98,13 +98,14 @@ function apply_api_routes(app){
 
     
     app.post('/api/login',jsonParser,async function(req,res,next){
-        let orgLogin = new EventOrganiser();
-        orgLogin.createFromJSON(req.body);
+        // let orgLogin = new EventOrganiser();
+        // orgLogin.createFromJSON(req.body);
+        let data = req.body
         
 
         let user_read = {}
         try{
-            user_read = await doQuery(`SELECT name,password FROM ${tableNames.orgTable} WHERE name = '${orgLogin.name}'`);
+            user_read = await doQuery(`SELECT name,password FROM ${tableNames.orgTable} WHERE name = '${data["username"]}'`);
             console.log(`DB res: `);
             console.log(user_read);
         }catch(e){
@@ -114,12 +115,12 @@ function apply_api_routes(app){
             return;
         }
         console.log(`api/login post request body:`);
-        // console.log(req.body);
+
         if (user_read.rowCount == 0){
             console.log("a---------------");
             res.status(403).json({"message":"No account exists"});
         }else{
-            if (user_read.rows[0]["password"] == orgLogin.password){
+            if (user_read.rows[0]["password"] == data["password"]){
                 console.log("b---------------");
                 res.status(200).json({"message":"Logged in Successfully"});
             }else{
@@ -128,14 +129,15 @@ function apply_api_routes(app){
             }
         }
     });
-    app.post('/api/signup',jsonParser,async function(req,res,next){
+
+    app.post('/api/signupOrg',jsonParser,async function(req,res,next){
         console.log("--------------");
         let data = req.body
-        let postdata = new EventOrganiser();
-        postdata.createFromJSON(req.body);
+        //let postdata = new EventOrganiser();
+        //postdata.createFromJSON(req.body);
 
 
-        let q = `SELECT name FROM ${tableNames.orgTable} WHERE name ='${postdata.name}';`;
+        let q = `SELECT name FROM ${tableNames.orgTable} WHERE name ='${data["username"]}';`;
         console.log(q);
         let selectRes;
         try{
@@ -149,7 +151,7 @@ function apply_api_routes(app){
             console.log("In /api/signup, account already exists.");
             res.status(403).json({"message":"Username already in use"});
         }else{
-            q = `INSERT INTO ${tableNames.orgTable} (name,password) VALUES ('${postdata.name}','${postdata.password}');`;
+            q = `INSERT INTO ${tableNames.orgTable} (name,password) VALUES ('${data["username"]}','${data["password"]}');`;
             console.log(q);
             try{
                 await doQuery(q);
@@ -159,9 +161,77 @@ function apply_api_routes(app){
                 return;
             }
             console.log(`api/signup post request body inserted:`);
-            console.log(postdata);
             res.status(200).json({"message":"Account Created"});
         }
+    });
+
+    app.post('/api/signupCont',jsonParser,async function(req,res,next){
+        console.log("--------------");
+        console.log("in signup Contractor")
+        let data = req.body
+        //let postdata = new EventOrganiser();
+        //postdata.createFromJSON(req.body);
+
+
+        let q = `SELECT name FROM ${tableNames.contTable} WHERE name ='${data["username"]}';`;
+        console.log(q);
+        let selectRes;
+        try{
+            selectRes = await doQuery(q);
+        }catch(e){
+            console.log(`Error with await db select signup post`);console.log(e);
+            res.status(403).json({"message":"Bad data"});
+            return;
+        }
+        if (selectRes.rowCount != 0){
+            console.log("In /api/signup, account already exists.");
+            res.status(403).json({"message":"Username already in use"});
+        }else{
+            q = `INSERT INTO ${tableNames.contTable} (name,password) VALUES ('${data["username"]}','${data["password"]}');`;
+            console.log(q);
+            try{
+                await doQuery(q);
+            }catch(e){
+                console.log(`Error with await db insert signup post`);console.log(e);
+                res.status(403).json({"message":"Bad data"});
+                return;
+            }
+            console.log(`api/signup post request body inserted:`);
+            res.status(200).json({"message":"Account Created"});
+        }
+    });
+
+
+    //Find the user and return their profile
+    app.post('/api/getProfile',jsonParser,async function(req,res,next){
+        res.contentType('application/json');
+
+
+        let user_read = {}
+        try{
+            user_read = await doQuery(`SELECT name,password FROM ${tableNames.orgTable} WHERE name = '${data["username"]}'`);
+            console.log(`DB res: `);
+            console.log(user_read);
+        }catch(e){
+            console.log("db read error: ");
+            console.log(e);
+            res.status(403).json({"message":"Error"});
+            return;
+        }
+        console.log(`api/login post request body:`);
+
+
+
+
+
+
+
+        let data = await doQuery(`SELECT * FROM ${tableNames.orgTable}`);
+        console.log(`/api/getProfile: data rows:`);
+        console.log(data.rows);
+    
+        let respJson = JSON.stringify(data.rows)
+        res.send(respJson);
     });
 
     //This fetches all contacts that the user is chatting with
@@ -220,7 +290,9 @@ function apply_api_routes(app){
         res.send(data);
     });
 
-
+    //This is where I attempted to use a get request and send data with but
+    //could not extract the data to use
+    //We could use a post request instead of a get request to solve
     app.get('/api/getMessages',jsonParser,async function(req,res,next){
         res.contentType('application/json');
 
@@ -243,7 +315,7 @@ function apply_api_routes(app){
         
         const insert_statement = `
             INSERT INTO ${tableNames.messageTable} (organiser_id, chat_id, message, time_sent, user_sent)
-            VALUES('${data["organiserId"]}','${data["chat_id"]}','${data["message"]}','${data["time_sent"]}',${data["user_sent"]});  
+            VALUES('${data["organiserId"]}','${data["chatId"]}','${data["message"]}','${data["time_sent"]}',${data["user_sent"]});  
         `;
     
         try {

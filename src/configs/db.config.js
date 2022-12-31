@@ -11,11 +11,25 @@ const credentials = {
 
 const eventTableName = "test_events_table";//This table will hold the information of all events
 const organiserTableName = "test_organisers_table";//This table will hold the information of all organiser users
-const performerTableName = "";
+const contractorTableName = "test_contractor_table";
 const chatTableName = "test_chats_table"; //This holds a list of contacts that user is chatting with
 const messageTableName = "test_messages_table";//This holds the messages that are exchanged between two contacts
 
 // Connect with a connection pool.
+
+const contractor_table_init_create_query =  `
+CREATE TABLE IF NOT EXISTS "${contractorTableName}" (
+
+    contractor_id INT GENERATED ALWAYS AS IDENTITY,
+    name VARCHAR(100) NOT NULL,
+    password VARCHAR(100) NOT NULL,
+    location POINT,
+    location_name varchar(200),
+    bio varchar(2000),
+
+    PRIMARY KEY ("contractor_id")
+);`;
+
 
 const events_table_init_create_query =  `
 CREATE TABLE IF NOT EXISTS "${eventTableName}" (
@@ -113,6 +127,8 @@ async function initDB(){
     
     await doQuery(organisers_table_init_create_query);
 
+    await doQuery(contractor_table_init_create_query);
+
     await doQuery(chat_table_init_create_query);
 
     await doQuery(message_table_init_create_query);
@@ -121,6 +137,7 @@ async function initDB(){
 const tableNames = {
   eventTable:eventTableName,
   orgTable:organiserTableName,
+  contTable:contractorTableName,
   chatTable:chatTableName,
   messageTable:messageTableName,
 }
