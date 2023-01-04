@@ -19,7 +19,7 @@ function apply_routes(app){
         console.log(`${req.method} request @${req.url} not found`);
         console.log()
         // console.log(req);
-        res.sendStatus(404).body("Page not found -_-");
+        res.status(404).send("Page not found -_-");
     });
 
 }

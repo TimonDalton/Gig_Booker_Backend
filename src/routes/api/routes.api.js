@@ -90,7 +90,8 @@ function apply_api_routes(app){
             }
         }
     });
-    app.post('/api/signup',jsonParser,async function(req,res,next){
+
+    app.post('/api/signupOrg',jsonParser,async function(req,res,next){
         console.log("--------------");
         let data = req.body
         let postdata = new EventOrganiser();
@@ -106,7 +107,7 @@ function apply_api_routes(app){
             return;
         }
         if (selectRes.rowCount != 0){
-            console.log("In /api/signup, account already exists.");
+            console.log("In /api/signupOrg, account already exists.");
             res.status(403).json({"message":"Username already in use"});
         }else{
             q = `INSERT INTO ${tableNames.orgTable} (name,password) VALUES ('${postdata.name}','${postdata.password}');`;
@@ -123,6 +124,11 @@ function apply_api_routes(app){
             res.status(200).json({"message":"Account Created"});
         }
     });
+
+    app.all('/api/*',jsonParser,async function(req,res,next){
+        console.log(`API path not found: ${req.url}`);
+        res.status(404).json({"message":"API Endpoint not found"});
+    });  
 }
 
 module.exports = {
