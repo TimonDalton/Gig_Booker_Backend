@@ -9,19 +9,35 @@ const credentials = {
   port: 5432,
 };
 
-const eventTableName = "test_events_table";
-const organiserTableName = "test_organisers_table";
-const performerTableName = "";
+const eventTableName = "test_events_table";//This table will hold the information of all events
+const organiserTableName = "test_organisers_table";//This table will hold the information of all organiser users
+const contractorTableName = "test_contractor_table";
+const chatTableName = "test_chats_table"; //This holds a list of contacts that user is chatting with
+const messageTableName = "test_messages_table";//This holds the messages that are exchanged between two contacts
 
 // Connect with a connection pool.
+
+const contractor_table_init_create_query =  `
+CREATE TABLE IF NOT EXISTS "${contractorTableName}" (
+
+    contractor_id INT GENERATED ALWAYS AS IDENTITY,
+    name VARCHAR(100) NOT NULL,
+    password VARCHAR(100) NOT NULL,
+    location POINT,
+    location_name varchar(200),
+    bio varchar(2000),
+
+    PRIMARY KEY ("contractor_id")
+);`;
+
 
 const events_table_init_create_query =  `
 CREATE TABLE IF NOT EXISTS "${eventTableName}" (
 
-    id SERIAL NOT NULL,
-    organiser_id INTEGER NOT NULL,
+    event_id INT GENERATED ALWAYS AS IDENTITY,
+    organiser_id INT,
     name VARCHAR(100) NOT NULL,
-    startime  timestamp,
+    starttime  timestamp,
     final_payment NUMERIC(8,2),
 
     location POINT,
@@ -30,21 +46,60 @@ CREATE TABLE IF NOT EXISTS "${eventTableName}" (
 
     status VARCHAR(100),
 
-    PRIMARY KEY ("id")
+    PRIMARY KEY ("event_id"),
+    CONSTRAINT organiser_fk
+      FOREIGN KEY("organiser_id") 
+	      REFERENCES test_organiser_table("organiser_id")
+        ON DELETE CASCADE
 );`;
 
 const organisers_table_init_create_query =  `
 CREATE TABLE IF NOT EXISTS "${organiserTableName}" (
 
-    id SERIAL,
+    organiser_id INT GENERATED ALWAYS AS IDENTITY,
     name VARCHAR(100) NOT NULL,
     password VARCHAR(100) NOT NULL,
     location POINT,
     location_name varchar(200),
     bio varchar(2000),
 
-    PRIMARY KEY ("id")
+    PRIMARY KEY ("organiser_id")
 );`;
+
+const chat_table_init_create_query =  `
+CREATE TABLE IF NOT EXISTS "${chatTableName}" (
+
+    chat_id INT GENERATED ALWAYS AS IDENTITY,
+    organiser_id INT,
+    name VARCHAR(100) NOT NULL,
+
+    PRIMARY KEY ("chat_id"),
+    CONSTRAINT organiser_fk
+      FOREIGN KEY("organiser_id") 
+	      REFERENCES test_organiser_table("organiser_id")
+        ON DELETE CASCADE
+);`;
+
+const message_table_init_create_query =  `
+CREATE TABLE IF NOT EXISTS "${messageTableName}" (
+
+    message_id INT GENERATED ALWAYS AS IDENTITY,
+    chat_id INT,
+    organiser_id INTEGER NOT NULL,
+    message VARCHAR(2000) NOT NULL,
+    time_sent timestamp,
+    user_sent BOOLEAN NOT NULL,
+
+    PRIMARY KEY ("message_id"),
+    CONSTRAINT chat_fk
+      FOREIGN KEY("chat_id") 
+	      REFERENCES test_chats_table("chat_id")
+        ON DELETE CASCADE
+);`;
+//the on delete cascade means that if parent table entry is deleted then all child table entries will be deleted.
+//So if chat is deleted then all messages will also be deleted
+//DO NOTE: If parent table already exists this command will not work. So then parent table must be deleted to create child table
+
 
 const insert_str_events = `
     INSERT INTO "${eventTableName}" (name,startime,final_payment,location,location_name,description,status,organiser_id)
@@ -66,34 +121,25 @@ async function doQuery(query){
     let now = await pool.query(query);
     return now;
 }
-// async function doQueryWithClient(query,client){
-//     let now = await pool.query(query);
-//     return now;
-//   }
 
 async function initDB(){
     await doQuery(events_table_init_create_query);
-    // await doQuery(insert_str_events);
     
     await doQuery(organisers_table_init_create_query);
 
-    // await doQuery(insert_str_events);
+    await doQuery(contractor_table_init_create_query);
 
-    // await doQuery(insert_str_organisers);
-    // await doQuery(insert_str_organisers);
-    // let a = await doQuery(read_all);
-    // console.log(a.rows);
-        
-    // const poolResult = await poolDemo();
-    // console.log("Time with pool: " + poolResult.rows[0]["now"]);
-  
-    // const clientResult = await clientDemo();
-    // console.log("Time with client: " + clientResult.rows[0]["now"]);
+    await doQuery(chat_table_init_create_query);
+
+    await doQuery(message_table_init_create_query);
   
 }
 const tableNames = {
   eventTable:eventTableName,
   orgTable:organiserTableName,
+  contTable:contractorTableName,
+  chatTable:chatTableName,
+  messageTable:messageTableName,
 }
 module.exports = {
   initDB:initDB,
