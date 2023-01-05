@@ -30,29 +30,6 @@ CREATE TABLE IF NOT EXISTS "${contractorTableName}" (
     PRIMARY KEY ("contractor_id")
 );`;
 
-
-const events_table_init_create_query =  `
-CREATE TABLE IF NOT EXISTS "${eventTableName}" (
-
-    event_id INT GENERATED ALWAYS AS IDENTITY,
-    organiser_id INT,
-    name VARCHAR(100) NOT NULL,
-    starttime  timestamp,
-    final_payment NUMERIC(8,2),
-
-    location POINT,
-    location_name VARCHAR(200),
-    description VARCHAR(2000),
-
-    status VARCHAR(100),
-
-    PRIMARY KEY ("event_id"),
-    CONSTRAINT organiser_fk
-      FOREIGN KEY("organiser_id") 
-	      REFERENCES test_organiser_table("organiser_id")
-        ON DELETE CASCADE
-);`;
-
 const organisers_table_init_create_query =  `
 CREATE TABLE IF NOT EXISTS "${organiserTableName}" (
 
@@ -66,19 +43,40 @@ CREATE TABLE IF NOT EXISTS "${organiserTableName}" (
     PRIMARY KEY ("organiser_id")
 );`;
 
+const events_table_init_create_query =  `
+CREATE TABLE IF NOT EXISTS "${eventTableName}" (
+
+    event_id INT GENERATED ALWAYS AS IDENTITY,
+    organiser_id INTEGER,
+    name VARCHAR(100) NOT NULL,
+    starttime  timestamp,
+    final_payment NUMERIC(8,2),
+
+    location POINT,
+    location_name VARCHAR(200),
+    description VARCHAR(2000),
+
+    status VARCHAR(100),
+
+    PRIMARY KEY ("event_id"),
+    CONSTRAINT organiser_fk
+      FOREIGN KEY("organiser_id") 
+	      REFERENCES ${organiserTableName}("organiser_id")
+        ON DELETE CASCADE
+);`;
+
 const chat_table_init_create_query =  `
 CREATE TABLE IF NOT EXISTS "${chatTableName}" (
 
-    chat_id INT GENERATED ALWAYS AS IDENTITY,
-    organiser_id INT,
-    name VARCHAR(100) NOT NULL,
-
     PRIMARY KEY ("chat_id"),
-    CONSTRAINT organiser_fk
-      FOREIGN KEY("organiser_id") 
-	      REFERENCES test_organiser_table("organiser_id")
-        ON DELETE CASCADE
-);`;
+    chat_id INT GENERATED ALWAYS AS IDENTITY,
+    organiser_id INTEGER,
+    name VARCHAR(100) NOT NULL`+
+    // ,CONSTRAINT organiser_fk
+    //   FOREIGN KEY("organiser_id") 
+	  //     REFERENCES ${organiserTableName}("organiser_id")
+    //     ON DELETE CASCADE
+`);`;
 
 const message_table_init_create_query =  `
 CREATE TABLE IF NOT EXISTS "${messageTableName}" (
@@ -93,7 +91,7 @@ CREATE TABLE IF NOT EXISTS "${messageTableName}" (
     PRIMARY KEY ("message_id"),
     CONSTRAINT chat_fk
       FOREIGN KEY("chat_id") 
-	      REFERENCES test_chats_table("chat_id")
+	      REFERENCES ${chatTableName}("chat_id")
         ON DELETE CASCADE
 );`;
 //the on delete cascade means that if parent table entry is deleted then all child table entries will be deleted.
