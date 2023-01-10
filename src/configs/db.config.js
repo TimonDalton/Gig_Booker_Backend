@@ -17,18 +17,6 @@ const messageTableName = "test_messages_table";//This holds the messages that ar
 
 // Connect with a connection pool.
 
-const contractor_table_init_create_query =  `
-CREATE TABLE IF NOT EXISTS "${contractorTableName}" (
-
-    contractor_id INT GENERATED ALWAYS AS IDENTITY,
-    name VARCHAR(100) NOT NULL,
-    password VARCHAR(100) NOT NULL,
-    location POINT,
-    location_name varchar(200),
-    bio varchar(2000),
-
-    PRIMARY KEY ("contractor_id")
-);`;
 
 const organisers_table_init_create_query =  `
 CREATE TABLE IF NOT EXISTS "${organiserTableName}" (
@@ -42,6 +30,20 @@ CREATE TABLE IF NOT EXISTS "${organiserTableName}" (
 
     PRIMARY KEY ("organiser_id")
 );`;
+
+const contractor_table_init_create_query =  `
+CREATE TABLE IF NOT EXISTS "${contractorTableName}" (
+
+    contractor_id INT GENERATED ALWAYS AS IDENTITY,
+    name VARCHAR(100) NOT NULL,
+    password VARCHAR(100) NOT NULL,
+    location POINT,
+    location_name varchar(200),
+    bio varchar(2000),
+
+    PRIMARY KEY ("contractor_id")
+);`;
+
 
 const events_table_init_create_query =  `
 CREATE TABLE IF NOT EXISTS "${eventTableName}" (
@@ -116,8 +118,15 @@ const read_all = `
 var pool = new Pool(credentials);
 
 async function doQuery(query){
+  try{
     let now = await pool.query(query);
     return now;
+  }catch(e){
+    console.log("Tried: ");
+    console.log(query);
+    console.log("Got: ");
+    console.log(e);
+  }
 }
 
 async function initDB(){
