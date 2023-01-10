@@ -130,9 +130,9 @@ async function doQuery(query){
 }
 
 async function initDB(){
-    await doQuery(events_table_init_create_query);
-    
     await doQuery(organisers_table_init_create_query);
+
+    await doQuery(events_table_init_create_query);
 
     await doQuery(contractor_table_init_create_query);
 
