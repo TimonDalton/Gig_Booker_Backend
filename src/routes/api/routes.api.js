@@ -30,8 +30,8 @@ function apply_api_routes(app){
         let data = req.body;
         
         const insert_statement = `
-            INSERT INTO ${tableNames.eventTable} (  name, starttime, final_payment, location, location_name, description, status)
-            VALUES('${data["name"]}','${data["startTime"]}','${data["payment"]}','${3},${4}','${data["locationName"]}','${data["description"]}','${data["status"]}');  
+            INSERT INTO ${tableNames.eventTable} (  name, organiser_id, starttime, final_payment, location, location_name, description, status)
+            VALUES('${data["name"]}','${data["organiserId"]}','${data["startTime"]}','${data["payment"]}','${3},${4}','${data["locationName"]}','${data["description"]}','${data["status"]}');  
         `;
     
         try {
