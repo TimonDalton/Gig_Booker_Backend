@@ -23,13 +23,15 @@ const { Pool } = require("pg");
 // console.log("Time with client: " + clientResult.rows[0]["now"]);
 var app = express()
 
-apply_routes(app)
-
 app.use(session({
-  secret: 'keyboard cat',
+  secret: 'skroodado54321',
   resave: false,
   saveUninitialized: true
 }));
+
+apply_routes(app)
+
+
 
 let port = 3000
 app.listen(port)

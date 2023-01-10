@@ -1,4 +1,5 @@
 const { Pool, Client } = require("pg");
+const  {EventOrganiser} = require("../src/models/eventOrganiser_class");
 
 const credentials = {
   user: "postgres",

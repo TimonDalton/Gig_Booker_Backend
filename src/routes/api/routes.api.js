@@ -31,7 +31,7 @@ function apply_api_routes(app){
         
         const insert_statement = `
             INSERT INTO ${tableNames.eventTable} (  name, organiser_id, starttime, final_payment, location, location_name, description, status)
-            VALUES('${data["name"]}','${data["organiserId"]}','${data["startTime"]}','${data["payment"]}','${3},${4}','${data["locationName"]}','${data["description"]}','${data["status"]}');  
+            VALUES('${data["name"]}','${req.session.organiserId}','${data["startTime"]}','${data["payment"]}','${3},${4}','${data["locationName"]}','${data["description"]}','${data["status"]}');  
         `;
     
         try {
@@ -105,7 +105,7 @@ function apply_api_routes(app){
 
         let user_read = {}
         try{
-            user_read = await doQuery(`SELECT name,password FROM ${tableNames.orgTable} WHERE name = '${data["username"]}'`);
+            user_read = await doQuery(`SELECT name,password,organiser_id FROM ${tableNames.orgTable} WHERE name = '${data["username"]}'`);
             console.log(`DB res: `);
             console.log(user_read);
         }catch(e){
@@ -117,14 +117,12 @@ function apply_api_routes(app){
         console.log(`api/login post request body:`);
 
         if (user_read.rowCount == 0){
-            console.log("a---------------");
             res.status(403).json({"message":"No account exists"});
         }else{
             if (user_read.rows[0]["password"] == data["password"]){
-                console.log("b---------------");
+                req.session.organiserId = user_read.rows[0]["organiser_id"];
                 res.status(200).json({"message":"Logged in Successfully"});
             }else{
-                console.log("c---------------");
                 res.status(403).json({"message":"Wrong account details"});
             }
         }
