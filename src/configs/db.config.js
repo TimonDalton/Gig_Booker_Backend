@@ -10,38 +10,55 @@ const credentials = {
 };
 
 const eventTableName = "test_events_table";//This table will hold the information of all events
+const userTableName = "test_users_table";//This table will hold all the login information for all users
 const organiserTableName = "test_organisers_table";//This table will hold the information of all organiser users
-const contractorTableName = "test_contractor_table";
+const performerTableName = "test_performer_table";
 const chatTableName = "test_chats_table"; //This holds a list of contacts that user is chatting with
 const messageTableName = "test_messages_table";//This holds the messages that are exchanged between two contacts
 
 // Connect with a connection pool.
 
+const users_table_init_create_query =  `
+CREATE TABLE IF NOT EXISTS "${userTableName}" (
+
+    user_id INT GENERATED ALWAYS AS IDENTITY,
+    name VARCHAR(100) NOT NULL,
+    password VARCHAR(100) NOT NULL,
+    user_is_organiser BOOLEAN NOT NULL,
+
+    PRIMARY KEY ("user_id")
+);`;
 
 const organisers_table_init_create_query =  `
 CREATE TABLE IF NOT EXISTS "${organiserTableName}" (
 
     organiser_id INT GENERATED ALWAYS AS IDENTITY,
-    name VARCHAR(100) NOT NULL,
-    password VARCHAR(100) NOT NULL,
+    user_id INTEGER,
     location POINT,
     location_name varchar(200),
     bio varchar(2000),
 
-    PRIMARY KEY ("organiser_id")
+    PRIMARY KEY ("organiser_id"),
+    CONSTRAINT user_fk
+      FOREIGN KEY("user_id") 
+	      REFERENCES ${userTableName}("user_id")
+        ON DELETE CASCADE
 );`;
 
-const contractor_table_init_create_query =  `
-CREATE TABLE IF NOT EXISTS "${contractorTableName}" (
+const performer_table_init_create_query =  `
+CREATE TABLE IF NOT EXISTS "${performerTableName}" (
 
-    contractor_id INT GENERATED ALWAYS AS IDENTITY,
-    name VARCHAR(100) NOT NULL,
-    password VARCHAR(100) NOT NULL,
+    performer_id INT GENERATED ALWAYS AS IDENTITY,
+    user_id INTEGER,
     location POINT,
     location_name varchar(200),
     bio varchar(2000),
 
-    PRIMARY KEY ("contractor_id")
+    PRIMARY KEY ("performer_id"),
+    CONSTRAINT user_fk
+      FOREIGN KEY("user_id") 
+	      REFERENCES ${userTableName}("user_id")
+        ON DELETE CASCADE
 );`;
 
 
@@ -130,11 +147,13 @@ async function doQuery(query){
 }
 
 async function initDB(){
+    await doQuery(users_table_init_create_query);
+
     await doQuery(organisers_table_init_create_query);
 
+    await doQuery(performer_table_init_create_query);
+    
     await doQuery(events_table_init_create_query);
-
-    await doQuery(contractor_table_init_create_query);
 
     await doQuery(chat_table_init_create_query);
 
@@ -142,9 +161,10 @@ async function initDB(){
   
 }
 const tableNames = {
+  userTable:userTableName,
   eventTable:eventTableName,
   orgTable:organiserTableName,
-  contTable:contractorTableName,
+  perfTable:performerTableName,
   chatTable:chatTableName,
   messageTable:messageTableName,
 }

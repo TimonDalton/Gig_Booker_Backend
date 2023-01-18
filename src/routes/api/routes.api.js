@@ -6,9 +6,13 @@ const  {EventOrganiser} = require('../../models/eventOrganiser_class');
 function apply_api_routes(app){
 
     //This will fetch all events
-    app.get('/api/getEvent',jsonParser,async function(req,res,next){
+    //app.get('/api/getEvent',jsonParser,async function(req,res,next){
+    app.post('/api/getEventOrg',jsonParser,async function(req,res,next){
         res.contentType('application/json');
-        let data = await doQuery(`SELECT * FROM ${tableNames.eventTable}`);
+        //user_read = await doQuery(`SELECT name,password,user_id,user_is_organiser FROM ${tableNames.userTable} WHERE name = '${data["username"]}'`);
+
+        console.log(req.session);
+        let data = await doQuery(`SELECT * FROM ${tableNames.eventTable} WHERE organiser_id = '${req.session.organiserId}'`);
         console.log(`/api/getEvent: data rows:`);
         console.log(data.rows);
     
@@ -26,9 +30,9 @@ function apply_api_routes(app){
     app.post('/api/createEvent',jsonParser,async function(req,res,next){
         console.log("CreateEvent in Backend/routes/api/routes.api.js");
         console.log("This is the received JSON request:");
-        console.log(req.body);
         let data = req.body;
-        
+        console.log("REQ REQ REQ REQ");
+        console.log(req.session);
         const insert_statement = `
             INSERT INTO ${tableNames.eventTable} (  name, organiser_id, starttime, final_payment, location, location_name, description, status)
             VALUES('${data["name"]}','${req.session.organiserId}','${data["startTime"]}','${data["payment"]}','${3},${4}','${data["locationName"]}','${data["description"]}','${data["status"]}');  
@@ -98,14 +102,11 @@ function apply_api_routes(app){
 
     
     app.post('/api/login',jsonParser,async function(req,res,next){
-        // let orgLogin = new EventOrganiser();
-        // orgLogin.createFromJSON(req.body);
         let data = req.body
         
-
         let user_read = {}
         try{
-            user_read = await doQuery(`SELECT name,password,organiser_id FROM ${tableNames.orgTable} WHERE name = '${data["username"]}'`);
+            user_read = await doQuery(`SELECT name,password,user_id,user_is_organiser FROM ${tableNames.userTable} WHERE name = '${data["username"]}'`);
             console.log(`DB res: `);
             console.log(user_read);
         }catch(e){
@@ -120,59 +121,30 @@ function apply_api_routes(app){
             res.status(403).json({"message":"No account exists"});
         }else{
             if (user_read.rows[0]["password"] == data["password"]){
-                req.session.organiserId = user_read.rows[0]["organiser_id"];
-                res.status(200).json({"message":"Logged in Successfully"});
+                req.session.userId = user_read.rows[0]["user_id"];
+                
+                
+                if (user_read.rows[0]["user_is_organiser"] == true){
+                    user_read = await doQuery(`SELECT organiser_id FROM ${tableNames.orgTable} WHERE user_id = '${user_read.rows[0]["user_id"]}'`);
+                    req.session.organiserId = user_read.rows[0]["organiser_id"];
+                    res.status(200).json({"message":"Logged in Successfully as Organiser"});
+                }else{
+                    user_read = await doQuery(`SELECT performer_id FROM ${tableNames.perfTable} WHERE user_id = '${user_read.rows[0]["user_id"]}'`);
+                    req.session.performerId = user_read.rows[0]["performer_id"];
+                    res.status(200).json({"message":"Logged in Successfully as Performer"});
+                }
+
             }else{
                 res.status(403).json({"message":"Wrong account details"});
             }
         }
     });
 
-    app.post('/api/signupOrg',jsonParser,async function(req,res,next){
-        console.log("--------------");
+    app.post('/api/signup',jsonParser,async function(req,res,next){
         let data = req.body
-        //let postdata = new EventOrganiser();
-        //postdata.createFromJSON(req.body);
 
 
-        let q = `SELECT name FROM ${tableNames.orgTable} WHERE name ='${data["username"]}';`;
-        console.log(q);
-        let selectRes;
-        try{
-            selectRes = await doQuery(q);
-        }catch(e){
-            console.log(`Error with await db select signup post`);console.log(e);
-            res.status(403).json({"message":"Bad data"});
-            return;
-        }
-        if (selectRes.rowCount != 0){
-            console.log("In /api/signupOrg, account already exists.");
-            res.status(403).json({"message":"Username already in use"});
-        }else{
-            q = `INSERT INTO ${tableNames.orgTable} (name,password) VALUES ('${data["username"]}','${data["password"]}');`;
-            console.log(q);
-            try{
-                await doQuery(q);
-            }catch(e){
-                console.log(`Error with await db insert signup post`);console.log(e);
-                res.status(403).json({"message":"Bad data"});
-                return;
-            }
-            console.log(`api/signup post request body inserted:`);
-            res.status(200).json({"message":"Account Created"});
-        }
-    });
-
-
-    app.post('/api/signupCont',jsonParser,async function(req,res,next){
-        console.log("--------------");
-        console.log("in signup Contractor")
-        let data = req.body
-        //let postdata = new EventOrganiser();
-        //postdata.createFromJSON(req.body);
-
-
-        let q = `SELECT name FROM ${tableNames.contTable} WHERE name ='${data["username"]}';`;
+        let q = `SELECT name FROM ${tableNames.userTable} WHERE name ='${data["username"]}';`;
         console.log(q);
         let selectRes;
         try{
@@ -186,10 +158,28 @@ function apply_api_routes(app){
             console.log("In /api/signup, account already exists.");
             res.status(403).json({"message":"Username already in use"});
         }else{
-            q = `INSERT INTO ${tableNames.contTable} (name,password) VALUES ('${data["username"]}','${data["password"]}');`;
-            console.log(q);
+            q = `INSERT INTO ${tableNames.userTable} (name,password,user_is_organiser) VALUES ('${data["username"]}','${data["password"]}','${data["isOrganiser"]}');`;
+            
             try{
                 await doQuery(q);
+                user_read = await doQuery(`SELECT user_id FROM ${tableNames.userTable} WHERE name = '${data["username"]}'`);
+                req.session.userId = user_read.rows[0]["user_id"];
+
+                if(data["isOrganiser"] == "true"){
+                    q_2 = `INSERT INTO ${tableNames.orgTable} (user_id) VALUES ('${user_read.rows[0]["user_id"]}');`;
+                    await doQuery(q_2);
+
+                    user_read = await doQuery(`SELECT organiser_id FROM ${tableNames.orgTable} WHERE user_id = '${req.session.userId}'`);
+                    req.session.organiserId = user_read.rows[0]["organiser_id"];
+                }else{
+                    q_2 = `INSERT INTO ${tableNames.perfTable} (user_id) VALUES ('${user_read.rows[0]["user_id"]}');`;
+                    await doQuery(q_2);
+
+                    user_read = await doQuery(`SELECT performer_id FROM ${tableNames.perfTable} WHERE user_id = '${req.session.userId}'`);
+                    req.session.perfromerId = user_read.rows[0]["performer_id"];
+                }
+                
+
             }catch(e){
                 console.log(`Error with await db insert signup post`);console.log(e);
                 res.status(403).json({"message":"Bad data"});
