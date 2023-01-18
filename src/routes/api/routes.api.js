@@ -14,7 +14,7 @@ function apply_api_routes(app){
         console.log(req.session);
         let data = await doQuery(`SELECT * FROM ${tableNames.eventTable} WHERE organiser_id = '${req.session.organiserId}'`);
         console.log(`/api/getEvent: data rows:`);
-        console.log(data.rows);
+        console.log(data.rowCount);
     
         let respJson = JSON.stringify(data.rows)
         res.send(respJson);
@@ -75,8 +75,8 @@ function apply_api_routes(app){
     //Here an event will be edited
     app.put('/api/editEvent',jsonParser,async function(req,res,next){
         console.log("editEvent in Backend/routes/api/routes.api.js");
-        console.log("This is the received JSON request:");
-        console.log(req.body);
+        // console.log("This is the received JSON request:");
+        // console.log(req.body);
         let data = req.body;
         
         const edit_statement = `
@@ -103,19 +103,17 @@ function apply_api_routes(app){
     
     app.post('/api/login',jsonParser,async function(req,res,next){
         let data = req.body
+        console.log(`api/login post request`);
         
         let user_read = {}
         try{
             user_read = await doQuery(`SELECT name,password,user_id,user_is_organiser FROM ${tableNames.userTable} WHERE name = '${data["username"]}'`);
-            console.log(`DB res: `);
-            console.log(user_read);
-        }catch(e){
+        }catch(error){
             console.log("db read error: ");
-            console.log(e);
+            console.log(error);
             res.status(403).json({"message":"Error"});
-            return;
         }
-        console.log(`api/login post request body:`);
+        
 
         if (user_read.rowCount == 0){
             res.status(403).json({"message":"No account exists"});
@@ -135,8 +133,16 @@ function apply_api_routes(app){
                 }
 
             }else{
-                res.status(403).json({"message":"Wrong account details"});
+                if (user_read.rows[0]["password"] == data["password"]){
+                    req.session.isOrganiser = false;
+                    req.session.isPerformer = !req.session.isOrganiser;
+                    req.session.performerId = user_read.rows[0]["organiser_id"];
+                    res.status(200).json({"message":"Logged in Successfully"});
+                }else{
+                    res.status(403).json({"message":"Wrong account details"});
+                }
             }
+
         }
     });
 
@@ -148,9 +154,12 @@ function apply_api_routes(app){
         console.log(q);
         let selectRes;
         try{
-            selectRes = await doQuery(q);
+            selectRes = await doQuery(query);
         }catch(e){
-            console.log(`Error with await db select signup post`);console.log(e);
+            console.log(`Error with await db select signup post. Tried:`);
+            console.log(query);
+            console.log(`Got:`);            
+            console.log(e);
             res.status(403).json({"message":"Bad data"});
             return;
         }
@@ -181,7 +190,11 @@ function apply_api_routes(app){
                 
 
             }catch(e){
-                console.log(`Error with await db insert signup post`);console.log(e);
+                console.log(`Error with await db insert signup post. Tried:`);
+                console.log(query);
+                console.log(`Got:`);
+                console.log(e);
+
                 res.status(403).json({"message":"Bad data"});
                 return;
             }
@@ -199,8 +212,8 @@ function apply_api_routes(app){
         let user_read = {}
         try{
             user_read = await doQuery(`SELECT name,password FROM ${tableNames.orgTable} WHERE name = '${data["username"]}'`);
-            console.log(`DB res: `);
-            console.log(user_read);
+            // console.log(`DB res: `);
+            // console.log(user_read);
         }catch(e){
             console.log("db read error: ");
             console.log(e);
@@ -216,8 +229,8 @@ function apply_api_routes(app){
 
 
         let data = await doQuery(`SELECT * FROM ${tableNames.orgTable}`);
-        console.log(`/api/getProfile: data rows:`);
-        console.log(data.rows);
+        // console.log(`/api/getProfile: data rows:`);
+        // console.log(data.rows);
     
         let respJson = JSON.stringify(data.rows)
         res.send(respJson);
@@ -227,8 +240,8 @@ function apply_api_routes(app){
     app.get('/api/getChats',jsonParser,async function(req,res,next){
         res.contentType('application/json');
         let data = await doQuery(`SELECT * FROM ${tableNames.chatTable}`);
-        console.log(`/api/getChats: data rows:`);
-        console.log(data.rows);
+        // console.log(`/api/getChats: data rows:`);
+        // console.log(data.rows);
     
         let respJson = JSON.stringify(data.rows)
         res.send(respJson);
@@ -237,8 +250,8 @@ function apply_api_routes(app){
     //This will allow us to add a contacts information to the chat table
     app.post('/api/createChat',jsonParser,async function(req,res,next){
         console.log("CreateChat in Backend/routes/api/routes.api.js");
-        console.log("This is the received JSON request:");
-        console.log(req.body);
+        // console.log("This is the received JSON request:");
+        // console.log(req.body);
         let data = req.body;
         
         const insert_statement = `
@@ -260,8 +273,8 @@ function apply_api_routes(app){
     //Here a chat will be deleted
     app.delete('/api/deleteChat',jsonParser,async function(req,res,next){
         console.log("deleteChat in Backend/routes/api/routes.api.js");
-        console.log("This is the received JSON request:");
-        console.log(req.body);
+        // console.log("This is the received JSON request:");
+        // console.log(req.body);
         let data = req.body;
         
         const delete_statement = `
@@ -272,10 +285,10 @@ function apply_api_routes(app){
         try {
             await doQuery(delete_statement);
         } catch (error) {
-            console.log("READ TO DB ERROR ON CREATE EVENT");
+            console.log("READ TO DB ERROR ON DELETE CHAT");
             console.log(error);
         }
-        console.log('Sending back received data');
+        console.log('Done with delete');
         res.send(data);
     });
 
@@ -287,8 +300,8 @@ function apply_api_routes(app){
 
         //Here we should filter by column
         let data = await doQuery(`SELECT * FROM ${tableNames.messageTable}`);
-        console.log(`/api/getMessages: data rows:`);
-        console.log(data.rows);
+        // console.log(`/api/getMessages: data rows:`);
+        // console.log(data.rows);
     
         let respJson = JSON.stringify(data.rows)
         res.send(respJson);
@@ -297,8 +310,8 @@ function apply_api_routes(app){
     //This will allow us to add a message to the messages table
     app.post('/api/createMessage',jsonParser,async function(req,res,next){
         console.log("CreateMessage in Backend/routes/api/routes.api.js");
-        console.log("This is the received JSON request:");
-        console.log(req.body);
+        // console.log("This is the received JSON request:");
+        // console.log(req.body);
         let data = req.body;
 
         
@@ -313,7 +326,7 @@ function apply_api_routes(app){
             console.log("READ TO DB ERROR ON CREATE CHAT");
             console.log(error);
         }
-        console.log('Sending back received data');
+        console.log('Done with Create Message');
         res.send(data);
     });
 
