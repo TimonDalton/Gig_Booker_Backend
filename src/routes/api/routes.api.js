@@ -23,7 +23,7 @@ function apply_api_routes(app){
 
 
     //All of the events the performer can apply for. Currently, it is all of the events
-    app.get('/api/getVisibleEventsPerf',jsonParser,async function(req,res,next){
+    app.post('/api/getVisibleEventsPerf',jsonParser,async function(req,res,next){
         console.log("In api/getVisibleEventsPerf");
         res.contentType('application/json');
         //user_read = await doQuery(`SELECT name,password,user_id,user_is_organiser FROM ${tableNames.userTable} WHERE name = '${data["username"]}'`);
@@ -42,7 +42,7 @@ function apply_api_routes(app){
     });
 
     //All of the events the performer has already applied for.
-    app.get('/api/getEventsPerf',jsonParser,async function(req,res,next){
+    app.post('/api/getEventsPerf',jsonParser,async function(req,res,next){
         console.log("In /api/getEventsPerf");
         res.contentType('application/json');
         //user_read = await doQuery(`SELECT name,password,user_id,user_is_organiser FROM ${tableNames.userTable} WHERE name = '${data["username"]}'`);
@@ -50,9 +50,9 @@ function apply_api_routes(app){
         console.log(req.session);
         let data = await doQuery(
         `SELECT ${tableNames.eventTable}.* 
-            FROM ${tableNames.eventTable}, ${tablenames.perfEventIntTable}
-            WHERE ${tablenames.perfEventIntTable}.performer_id = ${req.session.performerId}
-            AND ${tablenames.perfEventIntTable}.event_id = ${tableNames.eventTable}.event_id;`
+            FROM ${tableNames.eventTable}, ${tableNames.perfEventIntTable}
+            WHERE ${tableNames.perfEventIntTable}.performer_id = ${req.session.performerId}
+            AND ${tableNames.perfEventIntTable}.event_id = ${tableNames.eventTable}.event_id;`
         );
 
 
@@ -164,22 +164,15 @@ function apply_api_routes(app){
                 if (user_read.rows[0]["user_is_organiser"] == true){
                     user_read = await doQuery(`SELECT organiser_id FROM ${tableNames.orgTable} WHERE user_id = '${user_read.rows[0]["user_id"]}'`);
                     req.session.organiserId = user_read.rows[0]["organiser_id"];
-                    res.status(200).json({"message":"Logged in Successfully as Organiser"});
+                    res.status(200).json({"isOrganiser":true,"message":"Logged in Successfully as Organiser"});
                 }else{
                     user_read = await doQuery(`SELECT performer_id FROM ${tableNames.perfTable} WHERE user_id = '${user_read.rows[0]["user_id"]}'`);
                     req.session.performerId = user_read.rows[0]["performer_id"];
-                    res.status(200).json({"message":"Logged in Successfully as Performer"});
+                    res.status(200).json({"isOrganiser":false,"message":"Logged in Successfully as Performer"});
                 }
 
-            }else{
-                if (user_read.rows[0]["password"] == data["password"]){
-                    req.session.isOrganiser = false;
-                    req.session.isPerformer = !req.session.isOrganiser;
-                    req.session.performerId = user_read.rows[0]["organiser_id"];
-                    res.status(200).json({"message":"Logged in Successfully"});
-                }else{
-                    res.status(403).json({"message":"Wrong account details"});
-                }
+            }else{                
+                res.status(403).json({"message":"Wrong account details"});
             }
 
         }
