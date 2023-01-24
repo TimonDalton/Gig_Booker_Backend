@@ -8,6 +8,7 @@ function apply_api_routes(app){
     //This will fetch all events
     //app.get('/api/getEvent',jsonParser,async function(req,res,next){
     app.post('/api/getEventOrg',jsonParser,async function(req,res,next){
+        console.log("In /api/getEventOrg");
         res.contentType('application/json');
         //user_read = await doQuery(`SELECT name,password,user_id,user_is_organiser FROM ${tableNames.userTable} WHERE name = '${data["username"]}'`);
 
@@ -19,14 +20,11 @@ function apply_api_routes(app){
         let respJson = JSON.stringify(data.rows)
         res.send(respJson);
     });
-    function a (req,res,next){
-        console.log("----------------------------------------------------");
-        console.log(req);
-        next();
-    }
+
 
     //All of the events the performer can apply for. Currently, it is all of the events
-    app.post('/api/getVisibleEventsPerf',jsonParser,async function(req,res,next){
+    app.get('/api/getVisibleEventsPerf',jsonParser,async function(req,res,next){
+        console.log("In api/getVisibleEventsPerf");
         res.contentType('application/json');
         //user_read = await doQuery(`SELECT name,password,user_id,user_is_organiser FROM ${tableNames.userTable} WHERE name = '${data["username"]}'`);
 
@@ -44,7 +42,8 @@ function apply_api_routes(app){
     });
 
     //All of the events the performer has already applied for.
-    app.post('/api/getEventsPerf',jsonParser,async function(req,res,next){
+    app.get('/api/getEventsPerf',jsonParser,async function(req,res,next){
+        console.log("In /api/getEventsPerf");
         res.contentType('application/json');
         //user_read = await doQuery(`SELECT name,password,user_id,user_is_organiser FROM ${tableNames.userTable} WHERE name = '${data["username"]}'`);
 
@@ -66,6 +65,7 @@ function apply_api_routes(app){
 
     //Here a new event will be created and the information from the JSON will be inserted
     app.post('/api/createEvent',jsonParser,async function(req,res,next){
+        console.log("In /api/createEvent");
         console.log("CreateEvent in Backend/routes/api/routes.api.js");
         console.log("This is the received JSON request:");
         let data = req.body;
@@ -89,7 +89,7 @@ function apply_api_routes(app){
 
     //Here an event will be deleted
     app.delete('/api/deleteEvent',jsonParser,async function(req,res,next){
-        console.log("deleteEvent in Backend/routes/api/routes.api.js");
+        console.log("In /api/deleteEvent");
         console.log("This is the received JSON request:");
         console.log(req.body);
         let data = req.body;
@@ -112,6 +112,7 @@ function apply_api_routes(app){
 
     //Here an event will be edited
     app.put('/api/editEvent',jsonParser,async function(req,res,next){
+        console.log("In /api/editEvent");
         console.log("editEvent in Backend/routes/api/routes.api.js");
         // console.log("This is the received JSON request:");
         // console.log(req.body);
@@ -140,8 +141,8 @@ function apply_api_routes(app){
 
     
     app.post('/api/login',jsonParser,async function(req,res,next){
+        console.log("In /api/login");
         let data = req.body
-        console.log(`api/login post request`);
         
         let user_read = {}
         try{
@@ -185,6 +186,7 @@ function apply_api_routes(app){
     });
 
     app.post('/api/signup',jsonParser,async function(req,res,next){
+        console.log("In /api/signup");
         let data = req.body
 
 
@@ -244,6 +246,7 @@ function apply_api_routes(app){
 
     //Find the user and return their profile
     app.post('/api/getProfile',jsonParser,async function(req,res,next){
+        console.log("In /api/getProfile");
         res.contentType('application/json');
 
 
@@ -260,12 +263,6 @@ function apply_api_routes(app){
         }
         console.log(`api/login post request body:`);
 
-
-
-
-
-
-
         let data = await doQuery(`SELECT * FROM ${tableNames.orgTable}`);
         // console.log(`/api/getProfile: data rows:`);
         // console.log(data.rows);
@@ -276,6 +273,7 @@ function apply_api_routes(app){
 
     //This fetches all contacts that the user is chatting with
     app.get('/api/getChats',jsonParser,async function(req,res,next){
+        console.log("In /api/getChats");
         res.contentType('application/json');
         let data = await doQuery(`SELECT * FROM ${tableNames.chatTable}`);
         // console.log(`/api/getChats: data rows:`);
@@ -287,6 +285,7 @@ function apply_api_routes(app){
     
     //This will allow us to add a contacts information to the chat table
     app.post('/api/createChat',jsonParser,async function(req,res,next){
+        console.log("In /api/createChat");
         console.log("CreateChat in Backend/routes/api/routes.api.js");
         // console.log("This is the received JSON request:");
         // console.log(req.body);
@@ -310,6 +309,7 @@ function apply_api_routes(app){
 
     //Here a chat will be deleted
     app.delete('/api/deleteChat',jsonParser,async function(req,res,next){
+        console.log("In /api/deleteChat");
         console.log("deleteChat in Backend/routes/api/routes.api.js");
         // console.log("This is the received JSON request:");
         // console.log(req.body);
@@ -334,6 +334,7 @@ function apply_api_routes(app){
     //could not extract the data to use
     //We could use a post request instead of a get request to solve
     app.get('/api/getMessages',jsonParser,async function(req,res,next){
+        console.log("In /api/getMessages");
         res.contentType('application/json');
 
         //Here we should filter by column
@@ -347,6 +348,7 @@ function apply_api_routes(app){
     
     //This will allow us to add a message to the messages table
     app.post('/api/createMessage',jsonParser,async function(req,res,next){
+        console.log("In /api/createMessage");
         console.log("CreateMessage in Backend/routes/api/routes.api.js");
         // console.log("This is the received JSON request:");
         // console.log(req.body);
@@ -370,7 +372,7 @@ function apply_api_routes(app){
 
     //catch all
     app.all('/api/*',jsonParser,async function(req,res,next){
-        console.log(`API path not found: ${req.url}`);
+        console.log(`API path not found: ${req.url} using ${req.method}`);
         res.status(404).json({"message":"API Endpoint not found"});
     });  
     
