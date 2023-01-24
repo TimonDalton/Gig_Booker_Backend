@@ -13,7 +13,7 @@ function apply_api_routes(app){
 
         console.log(req.session);
         let data = await doQuery(`SELECT * FROM ${tableNames.eventTable} WHERE organiser_id = '${req.session.organiserId}'`);
-        console.log(`/api/getEvent: data rows:`);
+        console.log(`/api/getEventOrg: data rows:`);
         console.log(data.rowCount);
     
         let respJson = JSON.stringify(data.rows)
@@ -25,6 +25,44 @@ function apply_api_routes(app){
         next();
     }
 
+    //All of the events the performer can apply for. Currently, it is all of the events
+    app.post('/api/getVisibleEventsPerf',jsonParser,async function(req,res,next){
+        res.contentType('application/json');
+        //user_read = await doQuery(`SELECT name,password,user_id,user_is_organiser FROM ${tableNames.userTable} WHERE name = '${data["username"]}'`);
+
+        console.log(req.session);
+        let data = await doQuery(
+        `SELECT * FROM ${tableNames.eventTable}`
+        );
+
+
+        console.log(`/api/getEventsPerf: data rows:`);
+        console.log(data.rowCount);
+    
+        let respJson = JSON.stringify(data.rows)
+        res.send(respJson);
+    });
+
+    //All of the events the performer has already applied for.
+    app.post('/api/getEventsPerf',jsonParser,async function(req,res,next){
+        res.contentType('application/json');
+        //user_read = await doQuery(`SELECT name,password,user_id,user_is_organiser FROM ${tableNames.userTable} WHERE name = '${data["username"]}'`);
+
+        console.log(req.session);
+        let data = await doQuery(
+        `SELECT ${tableNames.eventTable}.* 
+            FROM ${tableNames.eventTable}, ${tablenames.perfEventIntTable}
+            WHERE ${tablenames.perfEventIntTable}.performer_id = ${req.session.performerId}
+            AND ${tablenames.perfEventIntTable}.event_id = ${tableNames.eventTable}.event_id;`
+        );
+
+
+        console.log(`/api/getEventsPerf: data rows:`);
+        console.log(data.rowCount);
+    
+        let respJson = JSON.stringify(data.rows)
+        res.send(respJson);
+    });
 
     //Here a new event will be created and the information from the JSON will be inserted
     app.post('/api/createEvent',jsonParser,async function(req,res,next){
@@ -185,7 +223,7 @@ function apply_api_routes(app){
                     await doQuery(q_2);
 
                     user_read = await doQuery(`SELECT performer_id FROM ${tableNames.perfTable} WHERE user_id = '${req.session.userId}'`);
-                    req.session.perfromerId = user_read.rows[0]["performer_id"];
+                    req.session.performerId = user_read.rows[0]["performer_id"];
                 }
                 
 
