@@ -10,6 +10,7 @@ const credentials = {
 };
 
 const eventTableName = "test_events_table";//This table will hold the information of all events
+const performerEventTableName = "test_performer_events_table";//This table will store all the event_id's for a specfic performer
 const userTableName = "test_users_table";//This table will hold all the login information for all users
 const organiserTableName = "test_organisers_table";//This table will hold the information of all organiser users
 const performerTableName = "test_performer_table";
@@ -83,6 +84,28 @@ const events_table_init_create_query =  `
 CREATE TABLE IF NOT EXISTS "${eventTableName}" (
 
     event_id INT GENERATED ALWAYS AS IDENTITY,
+    organiser_id INTEGER,
+    name VARCHAR(100) NOT NULL,
+    starttime  timestamp,
+    final_payment NUMERIC(8,2),
+
+    location POINT,
+    location_name VARCHAR(200),
+    description VARCHAR(2000),
+
+    status VARCHAR(100),
+
+    PRIMARY KEY ("event_id"),
+    CONSTRAINT organiser_fk
+      FOREIGN KEY("organiser_id") 
+	      REFERENCES ${organiserTableName}("organiser_id")
+        ON DELETE CASCADE
+);`;
+
+const performer_events_table_init_create_query =  `
+CREATE TABLE IF NOT EXISTS "${performerEventTableName}" (
+
+    performer_event_id INT GENERATED ALWAYS AS IDENTITY,
     organiser_id INTEGER,
     name VARCHAR(100) NOT NULL,
     starttime  timestamp,
