@@ -14,6 +14,7 @@ const performerEventTableName = "test_performer_events_table";//This table will 
 const userTableName = "test_users_table";//This table will hold all the login information for all users
 const organiserTableName = "test_organisers_table";//This table will hold the information of all organiser users
 const performerTableName = "test_performer_table";
+const performerEventsIntermediaryTableName = "test_performer_events_int_table";
 const chatTableName = "test_chats_table"; //This holds a list of contacts that user is chatting with
 const messageTableName = "test_messages_table";//This holds the messages that are exchanged between two contacts
 
@@ -62,6 +63,22 @@ CREATE TABLE IF NOT EXISTS "${performerTableName}" (
         ON DELETE CASCADE
 );`;
 
+const performer_events_intermediary_table_init_create_query =  `
+CREATE TABLE IF NOT EXISTS "${performerEventsIntermediaryTableName}" (
+
+    performer_id INTEGER,
+    event_id INTEGER,
+
+    CONSTRAINT performer_fk
+      FOREIGN KEY("performer_id") 
+	      REFERENCES ${performerTableName}("performer_id")
+        ON DELETE CASCADE,
+
+    CONSTRAINT event_fk
+      FOREIGN KEY("event_id") 
+	      REFERENCES ${eventTableName}("event_id")
+        ON DELETE CASCADE
+);`;
 
 const events_table_init_create_query =  `
 CREATE TABLE IF NOT EXISTS "${eventTableName}" (
@@ -181,13 +198,16 @@ async function initDB(){
     await doQuery(chat_table_init_create_query);
 
     await doQuery(message_table_init_create_query);
-  
+
+    await doQuery(performer_events_intermediary_table_init_create_query);
 }
+
 const tableNames = {
   userTable:userTableName,
   eventTable:eventTableName,
   orgTable:organiserTableName,
   perfTable:performerTableName,
+  perfEventIntTable:performerEventsIntermediaryTableName,
   chatTable:chatTableName,
   messageTable:messageTableName,
 }

@@ -150,8 +150,8 @@ function apply_api_routes(app){
         let data = req.body
 
 
-        let q = `SELECT name FROM ${tableNames.userTable} WHERE name ='${data["username"]}';`;
-        console.log(q);
+        let query = `SELECT name FROM ${tableNames.userTable} WHERE "name" ='${data["username"]}';`;
+        console.log(query);
         let selectRes;
         try{
             selectRes = await doQuery(query);
