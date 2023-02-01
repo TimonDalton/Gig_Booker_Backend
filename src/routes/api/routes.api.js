@@ -57,10 +57,12 @@ function apply_api_routes(app){
             AND ${tableNames.perfEventIntTable}.event_id = ${tableNames.eventTable}.event_id;`
         );
 
-
+        if (data){
         console.log(`/api/getEventsPerf: data rows:`);
         console.log(data.rowCount);
-    
+        }else{
+            console.log(`No data /api/getEventsPerf'`);
+        }
         let respJson = JSON.stringify(data.rows)
         res.send(respJson);
     });
