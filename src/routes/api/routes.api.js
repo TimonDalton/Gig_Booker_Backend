@@ -15,9 +15,11 @@ function apply_api_routes(app){
         console.log(req.session);
         let data = await doQuery(`SELECT * FROM ${tableNames.eventTable} WHERE organiser_id = '${req.session.organiserId}'`);
         console.log(`/api/getEventOrg: data rows:`);
-        console.log(data.rowCount);
-    
-        let respJson = JSON.stringify(data.rows)
+        let respJson = '';
+        if (data) {console.log(data.rowCount);
+            console.log(`Data Rows: ${data.rowCount}`);
+            respJson = JSON.stringify(data.rows)
+        }
         res.send(respJson);
     });
 
