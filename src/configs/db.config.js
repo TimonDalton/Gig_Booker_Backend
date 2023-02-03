@@ -17,7 +17,6 @@ const performerTableName = "test_performer_table";
 const performerEventsIntermediaryTableName = "test_performer_events_int_table";
 const chatTableName = "test_chats_table"; //This holds a list of contacts that user is chatting with
 const messageTableName = "test_messages_table";//This holds the messages that are exchanged between two contacts
-
 // Connect with a connection pool.
 
 const users_table_init_create_query =  `
@@ -68,6 +67,7 @@ CREATE TABLE IF NOT EXISTS "${performerEventsIntermediaryTableName}" (
 
     performer_id INTEGER,
     event_id INTEGER,
+    status VARCHAR(20),
 
     CONSTRAINT performer_fk
       FOREIGN KEY("performer_id") 
@@ -102,27 +102,6 @@ CREATE TABLE IF NOT EXISTS "${eventTableName}" (
         ON DELETE CASCADE
 );`;
 
-const performer_events_table_init_create_query =  `
-CREATE TABLE IF NOT EXISTS "${performerEventTableName}" (
-
-    performer_event_id INT GENERATED ALWAYS AS IDENTITY,
-    organiser_id INTEGER,
-    name VARCHAR(100) NOT NULL,
-    starttime  timestamp,
-    final_payment NUMERIC(8,2),
-
-    location POINT,
-    location_name VARCHAR(200),
-    description VARCHAR(2000),
-
-    status VARCHAR(100),
-
-    PRIMARY KEY ("event_id"),
-    CONSTRAINT organiser_fk
-      FOREIGN KEY("organiser_id") 
-	      REFERENCES ${organiserTableName}("organiser_id")
-        ON DELETE CASCADE
-);`;
 
 const chat_table_init_create_query =  `
 CREATE TABLE IF NOT EXISTS "${chatTableName}" (

@@ -43,6 +43,78 @@ function apply_api_routes(app){
         res.send(respJson);
     });
 
+    app.post('/api/applyForEventPerf',jsonParser,async function(req,res,next){
+        console.log("In /api/applyForEventPerf");
+        res.contentType('application/json');
+        //user_read = await doQuery(`SELECT name,password,user_id,user_is_organiser FROM ${tableNames.userTable} WHERE name = '${data["username"]}'`);
+        let eventId = req.body["eventId"];
+        
+        let data = await doQuery(
+        `SELECT * FROM ${tableNames.perfEventIntTable} 
+            WHERE "performer_id" = ${req.session.performerId}
+            AND "event_id" = ${eventId}`
+        );
+    
+        if (!data){
+            res.status(400).json({"message":"Error"});
+        }else{  
+            if(data.rowCount > 0){
+                res.status(400).json({"message":"Already applied"});
+            }else{
+                try{
+                    await doQuery(
+                        `INSERT INTO ${tableNames.perfEventIntTable} (performer_id,event_id,status)
+                            VALUES ('${req.session.performerId}','${eventId}','application');
+                        `
+                    );
+                    res.status(200).json({"message":"Applied"});
+                    console.log(`Accepted data: `);
+                    console.log(data);
+                }catch (e){
+                    res.status(400).json({"message":"Error Applying"});  
+                    console.log(e);                  
+                }
+            }
+        }
+    });
+    app.post('/api/deleteEventApplicationPerf',jsonParser,async function(req,res,next){
+        console.log("In /api/deleteEventApplicationPerf");
+        res.contentType('application/json');
+        //user_read = await doQuery(`SELECT name,password,user_id,user_is_organiser FROM ${tableNames.userTable} WHERE name = '${data["username"]}'`);
+        let eventId = req.body["eventId"];
+        try{
+        let data = await doQuery(
+        `DELETE FROM ${tableNames.perfEventIntTable} 
+            WHERE "performer_id" = ${req.session.performerId}
+            AND "event_id" = ${eventId}`  
+        );
+        res.status(200);
+        }catch(e){
+            res.status(400).json({"message":"Error Deleting"});
+            console.log("Delete of event performer connection successful");
+        }
+    });
+    
+    
+    app.post('/api/getHasAppliedForEvent',jsonParser,async function(req,res,next){
+        console.log("In /api/getHasAppliedForEvent");
+        res.contentType('application/json');
+
+        let data = await doQuery(
+            `SELECT * FROM ${tableNames.perfEventIntTable} 
+                WHERE "performer_id" = ${req.session.performerId}
+                AND "event_id" = ${req.body["eventId"]}`
+            );
+        if (!data){
+            console.log("/getHasAppliedForEvent getdata error");
+        }
+        let hasApplied = false;
+        if (data.rowCount >0){
+            hasApplied = true;
+            console.log(data);
+        }
+        res.status(200).json({"hasApplied":hasApplied}); 
+    });
     //All of the events the performer has already applied for.
     app.post('/api/getEventsPerf',jsonParser,async function(req,res,next){
         console.log("In /api/getEventsPerf");
@@ -66,6 +138,9 @@ function apply_api_routes(app){
         let respJson = JSON.stringify(data.rows)
         res.send(respJson);
     });
+    
+
+
 
     //Here a new event will be created and the information from the JSON will be inserted
     app.post('/api/createEvent',jsonParser,async function(req,res,next){
@@ -100,7 +175,7 @@ function apply_api_routes(app){
         
         const delete_statement = `
             DELETE FROM ${tableNames.eventTable}
-            WHERE event_id = '${data["event_id"]}' 
+            WHERE event_id = '${data["event_id"]};' 
         `;
  
         try {
@@ -157,7 +232,6 @@ function apply_api_routes(app){
             res.status(403).json({"message":"Error"});
         }
         
-
         if (user_read.rowCount == 0){
             res.status(403).json({"message":"No account exists"});
         }else{
