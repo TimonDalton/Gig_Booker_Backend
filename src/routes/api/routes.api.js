@@ -48,7 +48,7 @@ function apply_api_routes(app){
         res.contentType('application/json');
         //user_read = await doQuery(`SELECT name,password,user_id,user_is_organiser FROM ${tableNames.userTable} WHERE name = '${data["username"]}'`);
         let eventId = req.body["eventId"];
-        
+
         let data = await doQuery(
         `SELECT * FROM ${tableNames.perfEventIntTable} 
             WHERE "performer_id" = ${req.session.performerId}
@@ -64,15 +64,27 @@ function apply_api_routes(app){
                 try{
                     await doQuery(
                         `INSERT INTO ${tableNames.perfEventIntTable} (performer_id,event_id,status)
-                            VALUES ('${req.session.performerId}','${eventId}','application');
-                        `
+                            VALUES ('${req.session.performerId}','${eventId}','application'
+                        );`
                     );
                     res.status(200).json({"message":"Applied"});
                     console.log(`Accepted data: `);
                     console.log(data);
                 }catch (e){
                     res.status(400).json({"message":"Error Applying"});  
-                    console.log(e);                  
+                    console.log('Error in applyForEventPerf apply');
+                    console.log(e);
+                }
+
+                try{
+                    await doQuery(
+                        `INSERT INTO ${tableNames.chatTable} (organiser_id,performer_id,event_id,is_general)
+                            VALUES (${req.body["organiserId"]},'${req.session.performerId}','${eventId}','false'
+                        );`
+                    );
+                }catch(e){
+                    console.log('Error in applyForEventPerf create message');
+                    console.log(e);
                 }
             }
         }
@@ -83,11 +95,21 @@ function apply_api_routes(app){
         //user_read = await doQuery(`SELECT name,password,user_id,user_is_organiser FROM ${tableNames.userTable} WHERE name = '${data["username"]}'`);
         let eventId = req.body["eventId"];
         try{
-        let data = await doQuery(
+        await doQuery(//delete performer event link
         `DELETE FROM ${tableNames.perfEventIntTable} 
             WHERE "performer_id" = ${req.session.performerId}
             AND "event_id" = ${eventId}`  
         );
+        // let data = await doQuery(
+        //     `SELECT chat_id FROM ${tableNames.chatTable}
+        //         WHERE "event_id" = ${eventId}
+        //     );`
+        // );
+        // data = await doQuery(//search messages to find empty chats for event and performer
+        //     `SELECT * FROM ${tableNames.messageTable}
+        //         WHERE THEY ARE IN THE LIST OF CHATS
+        //     );`
+        // );
         res.status(200);
         }catch(e){
             res.status(400).json({"message":"Error Deleting"});

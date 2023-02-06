@@ -109,12 +109,19 @@ CREATE TABLE IF NOT EXISTS "${chatTableName}" (
     PRIMARY KEY ("chat_id"),
     chat_id INT GENERATED ALWAYS AS IDENTITY,
     organiser_id INTEGER,
-    name VARCHAR(100) NOT NULL`+
-    // ,CONSTRAINT organiser_fk
-    //   FOREIGN KEY("organiser_id") 
-	  //     REFERENCES ${organiserTableName}("organiser_id")
-    //     ON DELETE CASCADE
-`);`;
+    performer_id INTEGER,
+    event_id INTEGER,
+    is_general BOOLEAN,
+
+    CONSTRAINT organiser_fk
+      FOREIGN KEY("organiser_id") 
+	      REFERENCES ${organiserTableName}("organiser_id")
+        ON DELETE CASCADE,
+    CONSTRAINT performer_fk
+      FOREIGN KEY("performer_id") 
+        REFERENCES ${performerTableName}("performer_id")
+        ON DELETE CASCADE   
+);`;//no event_id cascade delete. Event chats shouldn't be deleted. If is_general, event_id should always be -1
 
 const message_table_init_create_query =  `
 CREATE TABLE IF NOT EXISTS "${messageTableName}" (
