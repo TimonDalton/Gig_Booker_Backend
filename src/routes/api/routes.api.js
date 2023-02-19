@@ -1,7 +1,6 @@
 const {doQuery,tableNames} = require("../../configs/db.config");
 var bodyParser = require('body-parser')
 var jsonParser = bodyParser.json()
-const  {EventOrganiser} = require('../../models/eventOrganiser_class');
 
 function apply_api_routes(app){
 
@@ -48,46 +47,49 @@ function apply_api_routes(app){
         res.contentType('application/json');
         //user_read = await doQuery(`SELECT name,password,user_id,user_is_organiser FROM ${tableNames.userTable} WHERE name = '${data["username"]}'`);
         let eventId = req.body["eventId"];
+        let organiserId = req.body["organiserId"];
 
         let data = await doQuery(
         `SELECT * FROM ${tableNames.perfEventIntTable} 
             WHERE "performer_id" = ${req.session.performerId}
             AND "event_id" = ${eventId}`
         );
-    
-        if (!data){
-            res.status(400).json({"message":"Error"});
-        }else{  
-            if(data.rowCount > 0){
-                res.status(400).json({"message":"Already applied"});
-            }else{
-                try{
-                    await doQuery(
-                        `INSERT INTO ${tableNames.perfEventIntTable} (performer_id,event_id,status)
-                            VALUES ('${req.session.performerId}','${eventId}','application'
-                        );`
-                    );
-                    res.status(200).json({"message":"Applied"});
-                    console.log(`Accepted data: `);
-                    console.log(data);
-                }catch (e){
-                    res.status(400).json({"message":"Error Applying"});  
-                    console.log('Error in applyForEventPerf apply');
-                    console.log(e);
-                }
-
-                try{
-                    await doQuery(
+        
+        
+        if(data.rowCount > 0){
+            res.status(400).json({"message":"Already applied"});
+        }else{
+            try{
+                let ret = await doQuery(
+                    `SELECT "chat_id" FROM ${tableNames.chatTable} 
+                        WHERE event_id = '${eventId}';
+                    `);
+                if (ret.rowCount == 0){
+                    ret = await doQuery(
                         `INSERT INTO ${tableNames.chatTable} (organiser_id,performer_id,event_id,is_general)
-                            VALUES (${req.body["organiserId"]},'${req.session.performerId}','${eventId}','false'
-                        );`
-                    );
-                }catch(e){
-                    console.log('Error in applyForEventPerf create message');
-                    console.log(e);
+                        VALUES ('${organiserId}','${req.session.performerId}','${eventId}','f')    
+                        RETURNING chat_id;`);
                 }
+                let chatId = ret.rows[0]["chat_id"];
+                console.log("GOT FROM INSERT RETURNING chat_id");
+                console.log(chatId);
+                
+                await doQuery(
+                    `INSERT INTO ${tableNames.perfEventIntTable} (performer_id,event_id,chat_id,status)
+                        VALUES ('${req.session.performerId}','${eventId}','${chatId}','application');
+                    `);
+                res.status(200).json({"message":"Applied"});
+                console.log(`Accepted data: `);
+                console.log(data);
+            }catch (e){
+                res.status(400).json({"message":"Error Applying"});  
+                console.log('Error in applyForEventPerf apply');
+                console.log(e);
             }
+
+
         }
+        
     });
     app.post('/api/deleteEventApplicationPerf',jsonParser,async function(req,res,next){
         console.log("In /api/deleteEventApplicationPerf");
@@ -174,7 +176,7 @@ function apply_api_routes(app){
         console.log(req.session);
         const insert_statement = `
             INSERT INTO ${tableNames.eventTable} (  name, organiser_id, starttime, final_payment, location, location_name, description, status)
-            VALUES('${data["name"]}','${req.session.organiserId}','${data["startTime"]}','${data["payment"]}','${3},${4}','${data["locationName"]}','${data["description"]}','${data["status"]}');  
+            VALUES('${data["name"]}','${req.session.organiserId}','${data["startTime"]}','${data["payment"]}','(4,3)','${data["locationName"]}','${data["description"]}','${data["status"]}');  
         `;
     
         try {
@@ -375,7 +377,40 @@ function apply_api_routes(app){
         let respJson = JSON.stringify(data.rows)
         res.send(respJson);
     });
+    app.get('/api/getDisplayableChat',jsonParser,async function(req,res,next){
+        console.log("In /api/getDisplayableChat");
+        res.contentType('application/json');
+        let chatId = req.body['chat_id'];
+        //step 1: store chat. step 2: process chat, and get its type to display it from db
+        let data = await doQuery(`
+            SELECT chat_id,organiser_id,performer_id,event_id,is_general FROM ${tableNames.chatTable}
+            WHERE chat_id = ${req.session.userId}
+        `);
+        let ret = data[0];
+        data = await doQuery(`
+            SELECT name FROM ${tableNames.userTable}
+            WHERE chat_id = ${data[0]['chat_id']}
+        `); 
+        ret['contact_name'] = data[0]['name']
+        if (!ret['is_general']){
+            
+        }
+        // console.log(`/api/getChats: data rows:`);
+        // console.log(data.rows);
     
+        let respJson = JSON.stringify(data.rows)
+        res.send(respJson);
+    });
+    app.get('/api/getDisplayableChats',jsonParser,async function(req,res,next){
+        console.log("In /api/getDisplayableChats");
+        res.contentType('application/json');
+        let data = await doQuery(`SELECT * FROM ${tableNames.chatTable}`);
+        // console.log(`/api/getChats: data rows:`);
+        // console.log(data.rows);
+    
+        let respJson = JSON.stringify(data.rows)
+        res.send(respJson);
+    });
     //This will allow us to add a contacts information to the chat table
     app.post('/api/createChat',jsonParser,async function(req,res,next){
         console.log("In /api/createChat");
