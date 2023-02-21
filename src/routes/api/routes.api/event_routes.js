@@ -1,3 +1,6 @@
+const {doQuery,tableNames} = require("../../../configs/db.config");
+var bodyParser = require('body-parser')
+var jsonParser = bodyParser.json()
 
 function apply_event_api_routes(app) {
 

@@ -1,3 +1,6 @@
+const {doQuery,tableNames} = require("../../../configs/db.config");
+var bodyParser = require('body-parser')
+var jsonParser = bodyParser.json()
 
 function apply_user_api_routes(app) {
     app.post('/api/login', jsonParser, async function (req, res, next) {

@@ -9,10 +9,10 @@ const {apply_user_api_routes} = require("./routes.api/user_routes");
 
 function apply_api_routes(app){
 
-    apply_event_api_routes();
-    apply_chat_api_routes();
-    apply_message_api_routes();
-    apply_user_api_routes();
+    apply_event_api_routes(app);
+    apply_chat_api_routes(app);
+    apply_message_api_routes(app);
+    apply_user_api_routes(app);
 
     //catch all
     app.all('/api/*',jsonParser,async function(req,res,next){
