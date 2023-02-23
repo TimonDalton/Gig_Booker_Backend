@@ -32,13 +32,12 @@ CREATE TABLE IF NOT EXISTS "${userTableName}" (
 const organisers_table_init_create_query =  `
 CREATE TABLE IF NOT EXISTS "${organiserTableName}" (
 
-    organiser_id INT GENERATED ALWAYS AS IDENTITY,
     user_id INTEGER,
     location POINT,
     location_name varchar(200),
     bio varchar(2000),
 
-    PRIMARY KEY ("organiser_id"),
+    PRIMARY KEY ("user_id"),
     CONSTRAINT user_fk
       FOREIGN KEY("user_id") 
 	      REFERENCES ${userTableName}("user_id")
@@ -48,17 +47,15 @@ CREATE TABLE IF NOT EXISTS "${organiserTableName}" (
 const performer_table_init_create_query =  `
 CREATE TABLE IF NOT EXISTS "${performerTableName}" (
 
-    performer_id INT GENERATED ALWAYS AS IDENTITY,
     user_id INTEGER,
     location POINT,
     location_name varchar(200),
     bio varchar(2000),
 
-    PRIMARY KEY ("performer_id"),
-    CONSTRAINT user_fk
-      FOREIGN KEY("user_id") 
-	      REFERENCES ${userTableName}("user_id")
-        ON DELETE CASCADE
+    CONSTRAINT users_fk
+    FOREIGN KEY("user_id") 
+      REFERENCES ${userTableName}("user_id")
+      ON DELETE CASCADE
 );`;
   
 const performer_events_intermediary_table_init_create_query =  `
@@ -71,7 +68,7 @@ CREATE TABLE IF NOT EXISTS "${performerEventsIntermediaryTableName}" (
 
     CONSTRAINT performer_fk
       FOREIGN KEY("performer_id") 
-	      REFERENCES ${performerTableName}("performer_id")
+	      REFERENCES ${userTableName}("user_id")
         ON DELETE CASCADE,
 
     CONSTRAINT event_fk
@@ -92,18 +89,17 @@ CREATE TABLE IF NOT EXISTS "${eventTableName}" (
     organiser_id INTEGER,
     name VARCHAR(100) NOT NULL,
     starttime  timestamp,
-    final_payment NUMERIC(8,2),
-
+    final_payment NUMERIC(10,2),
     location POINT,
     location_name VARCHAR(200),
     description VARCHAR(2000),
-
     status VARCHAR(100),
 
     PRIMARY KEY ("event_id"),
+
     CONSTRAINT organiser_fk
       FOREIGN KEY("organiser_id") 
-	      REFERENCES ${organiserTableName}("organiser_id")
+	      REFERENCES ${userTableName}("user_id")
         ON DELETE CASCADE
 );`;
 
@@ -120,11 +116,11 @@ CREATE TABLE IF NOT EXISTS "${chatTableName}" (
 
     CONSTRAINT organiser_fk
       FOREIGN KEY("organiser_id") 
-	      REFERENCES ${organiserTableName}("organiser_id")
+	      REFERENCES ${userTableName}("user_id")
         ON DELETE CASCADE,
     CONSTRAINT performer_fk
       FOREIGN KEY("performer_id") 
-        REFERENCES ${performerTableName}("performer_id")
+        REFERENCES ${userTableName}("user_id")
         ON DELETE CASCADE   
 );`;//no event_id cascade delete. Event chats shouldn't be deleted. If is_general, event_id should always be -1
 

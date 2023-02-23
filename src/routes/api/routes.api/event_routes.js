@@ -12,7 +12,7 @@ function apply_event_api_routes(app) {
         //user_read = await doQuery(`SELECT name,password,user_id,user_is_organiser FROM ${tableNames.userTable} WHERE name = '${data["username"]}'`);
 
         console.log(req.session);
-        let data = await doQuery(`SELECT * FROM ${tableNames.eventTable} WHERE organiser_id = '${req.session.organiserId}'`);
+        let data = await doQuery(`SELECT * FROM ${tableNames.eventTable} WHERE organiser_id = '${req.session.userId}'`);
         console.log(`/api/getEventOrg: data rows:`);
         let respJson = '';
         if (data) {
@@ -52,7 +52,7 @@ function apply_event_api_routes(app) {
 
         let data = await doQuery(
             `SELECT * FROM ${tableNames.perfEventIntTable} 
-            WHERE "performer_id" = ${req.session.performerId}
+            WHERE "performer_id" = ${req.session.userId}
             AND "event_id" = ${eventId}`
         );
 
@@ -68,7 +68,7 @@ function apply_event_api_routes(app) {
                 if (ret.rowCount == 0) {
                     ret = await doQuery(
                         `INSERT INTO ${tableNames.chatTable} (organiser_id,performer_id,event_id,is_general)
-                        VALUES ('${organiserId}','${req.session.performerId}','${eventId}','f')    
+                        VALUES ('${organiserId}','${req.session.userId}','${eventId}','f')    
                         RETURNING chat_id;`);
                 }
                 let chatId = ret.rows[0]["chat_id"];
@@ -77,7 +77,7 @@ function apply_event_api_routes(app) {
 
                 await doQuery(
                     `INSERT INTO ${tableNames.perfEventIntTable} (performer_id,event_id,chat_id,status)
-                        VALUES ('${req.session.performerId}','${eventId}','${chatId}','application');
+                        VALUES ('${req.session.userId}','${eventId}','${chatId}','application');
                     `);
                 res.status(200).json({ "message": "Applied" });
                 console.log(`Accepted data: `);
@@ -100,7 +100,7 @@ function apply_event_api_routes(app) {
         try {
             await doQuery(//delete performer event link
                 `DELETE FROM ${tableNames.perfEventIntTable} 
-            WHERE "performer_id" = ${req.session.performerId}
+            WHERE "performer_id" = ${req.session.userId}
             AND "event_id" = ${eventId}`
             );
             // let data = await doQuery(
@@ -127,7 +127,7 @@ function apply_event_api_routes(app) {
 
         let data = await doQuery(
             `SELECT * FROM ${tableNames.perfEventIntTable} 
-                WHERE "performer_id" = ${req.session.performerId}
+                WHERE "performer_id" = ${req.session.userId}
                 AND "event_id" = ${req.body["eventId"]}`
         );
         if (!data) {
@@ -150,7 +150,7 @@ function apply_event_api_routes(app) {
         let data = await doQuery(
             `SELECT ${tableNames.eventTable}.* 
             FROM ${tableNames.eventTable}, ${tableNames.perfEventIntTable}
-            WHERE ${tableNames.perfEventIntTable}.performer_id = ${req.session.performerId}
+            WHERE ${tableNames.perfEventIntTable}.performer_id = ${req.session.userId}
             AND ${tableNames.perfEventIntTable}.event_id = ${tableNames.eventTable}.event_id;`
         );
 
@@ -177,7 +177,7 @@ function apply_event_api_routes(app) {
         console.log(req.session);
         const insert_statement = `
             INSERT INTO ${tableNames.eventTable} (  name, organiser_id, starttime, final_payment, location, location_name, description, status)
-            VALUES('${data["name"]}','${req.session.organiserId}','${data["startTime"]}','${data["payment"]}','(4,3)','${data["locationName"]}','${data["description"]}','${data["status"]}');  
+            VALUES('${data["name"]}','${req.session.userId}','${data["startTime"]}','${data["payment"]}','(4,3)','${data["locationName"]}','${data["description"]}','${data["status"]}');  
         `;
 
         try {

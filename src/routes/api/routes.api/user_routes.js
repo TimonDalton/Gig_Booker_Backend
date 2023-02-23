@@ -24,12 +24,10 @@ function apply_user_api_routes(app) {
 
 
                 if (user_read.rows[0]["user_is_organiser"] == true) {
-                    user_read = await doQuery(`SELECT organiser_id FROM ${tableNames.orgTable} WHERE user_id = '${user_read.rows[0]["user_id"]}'`);
-                    req.session.organiserId = user_read.rows[0]["organiser_id"];
+                    req.session.organiserId = req.session.userId;
                     res.status(200).json({ "isOrganiser": true, "message": "Logged in Successfully as Organiser" });
                 } else {
-                    user_read = await doQuery(`SELECT performer_id FROM ${tableNames.perfTable} WHERE user_id = '${user_read.rows[0]["user_id"]}'`);
-                    req.session.performerId = user_read.rows[0]["performer_id"];
+                    req.session.performerId = req.session.userId;
                     res.status(200).json({ "isOrganiser": false, "message": "Logged in Successfully as Performer" });
                 }
 
@@ -70,17 +68,16 @@ function apply_user_api_routes(app) {
                 req.session.userId = user_read.rows[0]["user_id"];
 
                 if (data["isOrganiser"] == "true") {
-                    q_2 = `INSERT INTO ${tableNames.orgTable} (user_id) VALUES ('${user_read.rows[0]["user_id"]}');`;
+                    let id = user_read.rows[0]["user_id"];
+                    q_2 = `INSERT INTO ${tableNames.orgTable} (user_id) VALUES ('${id}');`;
                     await doQuery(q_2);
-
-                    user_read = await doQuery(`SELECT organiser_id FROM ${tableNames.orgTable} WHERE user_id = '${req.session.userId}'`);
-                    req.session.organiserId = user_read.rows[0]["organiser_id"];
+                    req.session.organiserId = id;
                 } else {
-                    q_2 = `INSERT INTO ${tableNames.perfTable} (user_id) VALUES ('${user_read.rows[0]["user_id"]}');`;
+                    let id = user_read.rows[0]["user_id"];
+                    q_2 = `INSERT INTO ${tableNames.perfTable} (user_id) VALUES ('${id}');`;
                     await doQuery(q_2);
 
-                    user_read = await doQuery(`SELECT performer_id FROM ${tableNames.perfTable} WHERE user_id = '${req.session.userId}'`);
-                    req.session.performerId = user_read.rows[0]["performer_id"];
+                    req.session.performerId = id;
                 }
 
 
