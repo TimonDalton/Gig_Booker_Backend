@@ -129,7 +129,6 @@ CREATE TABLE IF NOT EXISTS "${messageTableName}" (
 
     message_id INT GENERATED ALWAYS AS IDENTITY,
     chat_id INT,
-    organiser_id INTEGER NOT NULL,
     message VARCHAR(2000) NOT NULL,
     time_sent timestamp,
     user_sent BOOLEAN NOT NULL,

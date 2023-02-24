@@ -56,16 +56,22 @@ function apply_chat_api_routes(app) {
             data = await doQuery(`
                 SELECT name FROM ${tableNames.userTable}
                 WHERE user_id = ${ret[i]['organiser_id']}
+                LIMIT 1;
             `);
-            ret[i]['contact_name'] = data[0]['name'];
+            ret[i]['contact_name'] = data.rows[0]['name'];
         }
         for (let i = 0; i < ret.length; i++) {
             data = await doQuery(`
-                SELECT message_id,organiser_id,performer_id,chat_id,message,time_sent,user_sent FROM ${tableNames.messageTable}
+                SELECT message_id,chat_id,message,time_sent,user_sent FROM ${tableNames.messageTable}
                 WHERE chat_id = ${ret[i]['chat_id']}
                 ORDER BY message_id DESC LIMIT 1; 
             `);
-            ret[i]['last_message'] = data.rows[0];
+
+            if (data.rowCount > 0) {
+                ret[i]['last_message'] = data.rows[0];
+            } else {
+                ret[i]['last_message'] = null;
+            }
         }
         for (let i = 0; i < ret.length; i++) {
             data = await doQuery(`
@@ -76,7 +82,8 @@ function apply_chat_api_routes(app) {
         }
         // console.log(`/api/getChats: data rows:`);
         // console.log(data.rows);
-
+        console.log('ret of getDisplayableEventChatsPerf:');
+        console.log(ret);
         let respJson = JSON.stringify(ret)
         res.send(respJson);
     });
