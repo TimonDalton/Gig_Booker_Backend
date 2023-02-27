@@ -1,4 +1,5 @@
 const {doQuery,tableNames} = require("../configs/db.config");
+const {log} = require('../configs/logging');
 const {apply_api_routes} = require("./api/routes.api");
 var bodyParser = require('body-parser')
 var jsonParser = bodyParser.json()

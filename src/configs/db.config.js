@@ -1,4 +1,5 @@
 const { Pool } = require("pg");
+const {log} = require('../configs/logging');
 
 const credentials = {
   user: "postgres",

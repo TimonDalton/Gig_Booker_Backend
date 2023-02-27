@@ -1,6 +1,7 @@
 const { doQuery, tableNames } = require("../../../configs/db.config");
 var bodyParser = require('body-parser');
 var jsonParser = bodyParser.json();
+const {log} = require('../../../configs/logging');
 
 function apply_chat_api_routes(app) {
 
