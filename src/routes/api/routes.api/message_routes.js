@@ -30,8 +30,8 @@ function apply_message_api_routes(app) {
 
 
         const insert_statement = `
-            INSERT INTO ${tableNames.messageTable} (organiser_id, chat_id, message, time_sent, user_sent)
-            VALUES('${data["organiserId"]}','${data["chatId"]}','${data["message"]}','${data["time_sent"]}',${data["user_sent"]});  
+            INSERT INTO ${tableNames.messageTable} (chat_id, message, time_sent, organiser_sent)
+            VALUES('${data["chatId"]}','${data["message"]}','${data["timeSent"]}',${data["organiserSent"]});  
         `;
 
         try {

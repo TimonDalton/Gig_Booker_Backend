@@ -131,7 +131,7 @@ CREATE TABLE IF NOT EXISTS "${messageTableName}" (
     chat_id INT,
     message VARCHAR(2000) NOT NULL,
     time_sent timestamp,
-    user_sent BOOLEAN NOT NULL,
+    organiser_sent BOOLEAN NOT NULL,
 
     PRIMARY KEY ("message_id"),
     CONSTRAINT chat_fk

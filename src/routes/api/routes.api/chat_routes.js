@@ -22,7 +22,7 @@ function apply_chat_api_routes(app) {
         ret['contact_name'] = data[0]['name'];
 
         data = await doQuery(`
-            SELECT message_id,organiser_id,performer_id,chat_id,message,time_sent,user_sent FROM ${tableNames.messageTable}
+            SELECT message_id,organiser_id,performer_id,chat_id,message,time_sent,organiser_sent FROM ${tableNames.messageTable}
             WHERE (organiser_id = ${userId} OR performer_id = ${userId})
             AND chat_id = ${chatId}
             ORDER BY message_id DESC LIMIT 1; 
@@ -62,7 +62,7 @@ function apply_chat_api_routes(app) {
         }
         for (let i = 0; i < ret.length; i++) {
             data = await doQuery(`
-                SELECT message_id,chat_id,message,time_sent,user_sent FROM ${tableNames.messageTable}
+                SELECT message_id,chat_id,message,time_sent,organiser_sent FROM ${tableNames.messageTable}
                 WHERE chat_id = ${ret[i]['chat_id']}
                 ORDER BY message_id DESC LIMIT 1; 
             `);
@@ -87,7 +87,51 @@ function apply_chat_api_routes(app) {
         let respJson = JSON.stringify(ret)
         res.send(respJson);
     });
+    app.get('/api/getDisplayableEventChatsOrg', jsonParser, async function (req, res, next) {
+        console.log("In /api/getDisplayableEventChatsOrg");
+        res.contentType('application/json');
 
+        let data = await doQuery(`
+            SELECT chat_id,organiser_id,performer_id,event_id,is_general FROM ${tableNames.chatTable}
+            WHERE organiser_id = ${req.session.userId}
+            ORDER BY event_id DESC  ;
+        `);
+        let ret = data.rows;
+        for (let i = 0; i < ret.length; i++) {
+            data = await doQuery(`
+                SELECT name FROM ${tableNames.userTable}
+                WHERE user_id = ${ret[i]['performer_id']}
+                LIMIT 1;
+            `);
+            ret[i]['contact_name'] = data.rows[0]['name'];
+        }
+        for (let i = 0; i < ret.length; i++) {
+            data = await doQuery(`
+                SELECT message_id,chat_id,message,time_sent,organiser_sent FROM ${tableNames.messageTable}
+                WHERE chat_id = ${ret[i]['chat_id']}
+                ORDER BY message_id DESC LIMIT 1; 
+            `);
+
+            if (data.rowCount > 0) {
+                ret[i]['last_message'] = data.rows[0];
+            } else {
+                ret[i]['last_message'] = null;
+            }
+        }
+        for (let i = 0; i < ret.length; i++) {
+            data = await doQuery(`
+                SELECT event_id,organiser_id,name,starttime,final_payment,location,location_name,description,status FROM ${tableNames.eventTable}
+                WHERE (event_id = ${ret[i]['event_id']}); 
+            `);
+            ret[i]['event'] = data.rows[0];
+        }
+        // console.log(`/api/getChats: data rows:`);
+        // console.log(data.rows);
+        console.log('ret of getDisplayableEventChatsOrg:');
+        console.log(ret);
+        let respJson = JSON.stringify(ret)
+        res.send(respJson);
+    });
     app.get('/api/getDisplayableGeneralChats', jsonParser, async function (req, res, next) {
         console.log("In /api/getDisplayableChats");
         res.contentType('application/json');
