@@ -7,6 +7,7 @@ const {apply_event_api_routes} = require("./routes.api/event_routes");
 const {apply_chat_api_routes} = require("./routes.api/chat_routes");
 const {apply_message_api_routes} = require("./routes.api/message_routes");
 const {apply_user_api_routes} = require("./routes.api/user_routes");
+const {apply_account_api_routes} = require("./routes.api/account_routes");
 
 function apply_api_routes(app){
 
@@ -14,6 +15,7 @@ function apply_api_routes(app){
     apply_chat_api_routes(app);
     apply_message_api_routes(app);
     apply_user_api_routes(app);
+    apply_account_api_routes(app);
 
     //catch all
     app.all('/api/*',jsonParser,async function(req,res,next){
