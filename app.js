@@ -2,6 +2,7 @@ var express = require('express')
 var session = require('express-session');
 const {initDB,dbClientPool} = require("./src/configs/db.config");
 const {apply_routes} = require("./src/routes/routes");
+const fileUpload = require('express-fileupload');
 
 // import { initDB } from './src/configs/db.config.js';
 
@@ -28,10 +29,9 @@ app.use(session({
   resave: false,
   saveUninitialized: true
 }));
+app.use(fileUpload());
 
 apply_routes(app)
-
-
 
 let port = 3000
 app.listen(port)

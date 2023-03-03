@@ -10,15 +10,17 @@ function apply_account_api_routes(app) {
     //Here a chat will be deleted
     app.post('/api/sendImageToBackend', jsonParser, async function (req, res, next) {
         console.log("In /api/sendImageToBackend");
-        if (!req.body['file']) {
+        if (!req.files) {
             console.log(req);
             console.log("No files uploaded");
             console.log("Request");
             return res.status(400).send('No files were uploaded.');
         }
-        filePath = __dirname + '../../../../../test/public/img.jpg';
+        let fileName = 'jeff.jpg';
+        filePath = __dirname + '../../../../../test/public/'+fileName;
+        let file = req.files.file;
         try{
-            fs.writeFile(filePath, req.body['file'],(e)=>{
+            fs.writeFile(filePath,file.data,(e)=>{
                 if(e){
                     console.log("Didn't work because of:");
                     console.log(e);
