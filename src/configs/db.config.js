@@ -1,5 +1,5 @@
 const { Pool } = require("pg");
-const {log} = require('../configs/logging');
+const { log } = require('../configs/logging');
 
 const credentials = {
   user: "postgres",
@@ -17,9 +17,10 @@ const performerTableName = "performers";
 const performerEventsIntermediaryTableName = "performer_events_int";
 const chatTableName = "chats"; //This holds a list of contacts that user is chatting with
 const messageTableName = "messages";//This holds the messages that are exchanged between two contacts
+const accountMediaTableName = "account_media";//This holds the messages that are exchanged between two contacts
 // Connect with a connection pool.
 
-const users_table_init_create_query =  `
+const users_table_init_create_query = `
 CREATE TABLE IF NOT EXISTS "${userTableName}" (
 
     user_id INT GENERATED ALWAYS AS IDENTITY,
@@ -30,7 +31,7 @@ CREATE TABLE IF NOT EXISTS "${userTableName}" (
     PRIMARY KEY ("user_id")
 );`;
 
-const organisers_table_init_create_query =  `
+const organisers_table_init_create_query = `
 CREATE TABLE IF NOT EXISTS "${organiserTableName}" (
 
     user_id INTEGER,
@@ -45,7 +46,7 @@ CREATE TABLE IF NOT EXISTS "${organiserTableName}" (
         ON DELETE CASCADE
 );`;
 
-const performer_table_init_create_query =  `
+const performer_table_init_create_query = `
 CREATE TABLE IF NOT EXISTS "${performerTableName}" (
 
     user_id INTEGER,
@@ -58,102 +59,120 @@ CREATE TABLE IF NOT EXISTS "${performerTableName}" (
       REFERENCES ${userTableName}("user_id")
       ON DELETE CASCADE
 );`;
-  
-const performer_events_intermediary_table_init_create_query =  `
+
+const performer_events_intermediary_table_init_create_query = `
 CREATE TABLE IF NOT EXISTS "${performerEventsIntermediaryTableName}" (
 
-    performer_id INTEGER,
-    event_id INTEGER,
-    chat_id INTEGER,
-    status VARCHAR(20),
+  performer_id INTEGER,
+  event_id INTEGER,
+  chat_id INTEGER,
+  status VARCHAR(20),
 
-    CONSTRAINT performer_fk
-      FOREIGN KEY("performer_id") 
-	      REFERENCES ${userTableName}("user_id")
-        ON DELETE CASCADE,
+  CONSTRAINT performer_fk
+    FOREIGN KEY("performer_id") 
+      REFERENCES ${userTableName}("user_id")
+      ON DELETE CASCADE,
 
-    CONSTRAINT event_fk
-      FOREIGN KEY("event_id") 
-	      REFERENCES ${eventTableName}("event_id")
-        ON DELETE CASCADE,
+  CONSTRAINT event_fk
+    FOREIGN KEY("event_id") 
+      REFERENCES ${eventTableName}("event_id")
+      ON DELETE CASCADE,
 
-    CONSTRAINT chats_fk
+  CONSTRAINT chats_fk
+  FOREIGN KEY("chat_id") 
+    REFERENCES ${chatTableName}("chat_id")
+    ON DELETE CASCADE
+);`;
+
+const events_table_init_create_query = `
+CREATE TABLE IF NOT EXISTS "${eventTableName}" (
+
+  event_id INT GENERATED ALWAYS AS IDENTITY,
+  organiser_id INTEGER,
+  name VARCHAR(100) NOT NULL,
+  starttime  timestamp,
+  final_payment NUMERIC(10,2),
+  location POINT,
+  location_name VARCHAR(200),
+  description VARCHAR(2000),
+  status VARCHAR(100),
+
+  PRIMARY KEY ("event_id"),
+
+  CONSTRAINT organiser_fk
+    FOREIGN KEY("organiser_id") 
+      REFERENCES ${userTableName}("user_id")
+      ON DELETE CASCADE
+);`;
+
+const chat_table_init_create_query = `
+CREATE TABLE IF NOT EXISTS "${chatTableName}" (
+
+  PRIMARY KEY ("chat_id"),
+  chat_id INT GENERATED ALWAYS AS IDENTITY,
+  organiser_id INTEGER,
+  performer_id INTEGER,
+  event_id INTEGER,
+  is_general BOOLEAN,
+
+  CONSTRAINT organiser_fk
+    FOREIGN KEY("organiser_id") 
+      REFERENCES ${userTableName}("user_id")
+      ON DELETE CASCADE,
+  CONSTRAINT performer_fk
+    FOREIGN KEY("performer_id") 
+      REFERENCES ${userTableName}("user_id")
+      ON DELETE CASCADE   
+);`;//no event_id cascade delete. Event chats shouldn't be deleted. If is_general, event_id should always be -1
+
+const message_table_init_create_query = `
+CREATE TABLE IF NOT EXISTS "${messageTableName}" (
+
+  message_id INT GENERATED ALWAYS AS IDENTITY,
+  chat_id INT,
+  message VARCHAR(2000) NOT NULL,
+  time_sent timestamp,
+  organiser_sent BOOLEAN NOT NULL,
+
+  PRIMARY KEY ("message_id"),
+  CONSTRAINT chat_fk
     FOREIGN KEY("chat_id") 
       REFERENCES ${chatTableName}("chat_id")
       ON DELETE CASCADE
-  );`;
-
-const events_table_init_create_query =  `
-CREATE TABLE IF NOT EXISTS "${eventTableName}" (
-
-    event_id INT GENERATED ALWAYS AS IDENTITY,
-    organiser_id INTEGER,
-    name VARCHAR(100) NOT NULL,
-    starttime  timestamp,
-    final_payment NUMERIC(10,2),
-    location POINT,
-    location_name VARCHAR(200),
-    description VARCHAR(2000),
-    status VARCHAR(100),
-
-    PRIMARY KEY ("event_id"),
-
-    CONSTRAINT organiser_fk
-      FOREIGN KEY("organiser_id") 
-	      REFERENCES ${userTableName}("user_id")
-        ON DELETE CASCADE
 );`;
 
+const account_media_table_init_create_query = `
+CREATE TABLE IF NOT EXISTS "${accountMediaTableName}" (
 
-const chat_table_init_create_query =  `
-CREATE TABLE IF NOT EXISTS "${chatTableName}" (
+  media_id INT GENERATED ALWAYS AS IDENTITY, 
+  user_id INT,
+  file_name VARCHAR(2000) NOT NULL,
+  file_type VARCHAR(2000) NOT NULL,
+  upload_time  timestamp,
+  description VARCHAR(2000) NOT NULL,
 
-    PRIMARY KEY ("chat_id"),
-    chat_id INT GENERATED ALWAYS AS IDENTITY,
-    organiser_id INTEGER,
-    performer_id INTEGER,
-    event_id INTEGER,
-    is_general BOOLEAN,
-
-    CONSTRAINT organiser_fk
-      FOREIGN KEY("organiser_id") 
-	      REFERENCES ${userTableName}("user_id")
-        ON DELETE CASCADE,
-    CONSTRAINT performer_fk
-      FOREIGN KEY("performer_id") 
-        REFERENCES ${userTableName}("user_id")
-        ON DELETE CASCADE   
-);`;//no event_id cascade delete. Event chats shouldn't be deleted. If is_general, event_id should always be -1
-
-const message_table_init_create_query =  `
-CREATE TABLE IF NOT EXISTS "${messageTableName}" (
-
-    message_id INT GENERATED ALWAYS AS IDENTITY,
-    chat_id INT,
-    message VARCHAR(2000) NOT NULL,
-    time_sent timestamp,
-    organiser_sent BOOLEAN NOT NULL,
-
-    PRIMARY KEY ("message_id"),
-    CONSTRAINT chat_fk
-      FOREIGN KEY("chat_id") 
-	      REFERENCES ${chatTableName}("chat_id")
-        ON DELETE CASCADE
+  PRIMARY KEY ("media_id"),
+  CONSTRAINT user_fk
+    FOREIGN KEY("user_id") 
+      REFERENCES ${userTableName}("user_id")
+      ON DELETE CASCADE
 );`;
 //the on delete cascade means that if parent table entry is deleted then all child table entries will be deleted.
 //So if chat is deleted then all messages will also be deleted
 //DO NOTE: If parent table already exists this command will not work. So then parent table must be deleted to create child table
 
 
+
+
 const insert_str_events = `
-    INSERT INTO "${eventTableName}" (name,startime,final_payment,location,location_name,description,status,organiser_id)
-    VALUES ('Loftus Park Jam','2016-06-22 19:10:25-07',2500,'2.4,5.1','Loftus park','Kom speel kitaar. Ons kort kitaar. Soos in ons het n kort kitaar. ','artist undecided',1) 
-  ;
+  INSERT INTO "${eventTableName}" (name,startime,final_payment,location,location_name,description,status,organiser_id)
+  VALUES ('Loftus Park Jam','2016-06-22 19:10:25-07',2500,'2.4,5.1','Loftus park','Kom speel kitaar. Ons kort kitaar. Soos in ons het n kort kitaar. ','artist undecided',1
+  );
 `;
 const insert_str_organisers = `
   INSERT INTO ${organiserTableName} (name,password,location,location_name,bio)
-  VALUES ('Johann SilverHand','JohannSilver12345','2.2,5.1','snooba', 'Ek is staal. Noem my staal skouer man.') 
-;
+  VALUES ('Johann SilverHand','JohannSilver12345','2.2,5.1','snooba', 'Ek is staal. Noem my staal skouer man.'
+  );
 `;
 const read_all = `
   SELECT * FROM test_table;
@@ -161,11 +180,11 @@ const read_all = `
 
 var pool = new Pool(credentials);
 
-async function doQuery(query){
-  try{
+async function doQuery(query) {
+  try {
     let now = await pool.query(query);
     return now;
-  }catch(e){
+  } catch (e) {
     console.log("Tried: ");
     console.log(query);
     console.log("Got: ");
@@ -173,34 +192,37 @@ async function doQuery(query){
   }
 }
 
-async function initDB(){
-    await doQuery(users_table_init_create_query);
+async function initDB() {
+  await doQuery(users_table_init_create_query);
 
-    await doQuery(organisers_table_init_create_query);
+  await doQuery(organisers_table_init_create_query);
 
-    await doQuery(performer_table_init_create_query);
-    
-    await doQuery(events_table_init_create_query);
+  await doQuery(performer_table_init_create_query);
 
-    await doQuery(chat_table_init_create_query);
+  await doQuery(events_table_init_create_query);
 
-    await doQuery(message_table_init_create_query);
+  await doQuery(chat_table_init_create_query);
 
-    await doQuery(performer_events_intermediary_table_init_create_query);
+  await doQuery(message_table_init_create_query);
+
+  await doQuery(performer_events_intermediary_table_init_create_query);
+
+  await doQuery(account_media_table_init_create_query);
 }
 
 const tableNames = {
-  userTable:userTableName,
-  eventTable:eventTableName,
-  orgTable:organiserTableName,
-  perfTable:performerTableName,
-  perfEventIntTable:performerEventsIntermediaryTableName,
-  chatTable:chatTableName,
-  messageTable:messageTableName,
+  userTable: userTableName,
+  eventTable: eventTableName,
+  orgTable: organiserTableName,
+  perfTable: performerTableName,
+  perfEventIntTable: performerEventsIntermediaryTableName,
+  chatTable: chatTableName,
+  messageTable: messageTableName,
+  accountMediaTableName: accountMediaTableName,
 }
 module.exports = {
-  initDB:initDB,
-  dbClientPool:pool,
-  doQuery:doQuery,
-  tableNames:tableNames,
+  initDB: initDB,
+  dbClientPool: pool,
+  doQuery: doQuery,
+  tableNames: tableNames,
 }

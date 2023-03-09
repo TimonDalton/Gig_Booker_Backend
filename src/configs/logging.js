@@ -7,7 +7,7 @@ let priorities = {
     
 }
 let minPriority = 1;
-function log(s, {priority = 1}){
+function log(s, {priority = 1} = {}){
     if(priority >= minPriority){
         console.log(s);
     }

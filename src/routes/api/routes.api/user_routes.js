@@ -23,11 +23,16 @@ function apply_user_api_routes(app) {
             if (user_read.rows[0]["password"] == data["password"]) {
                 req.session.userId = user_read.rows[0]["user_id"];
 
+                const token = 'mytoken'; // Generate a unique token
+                const expires = new Date(Date.now() + 24 * 60 * 60 * 1000); 
 
                 if (user_read.rows[0]["user_is_organiser"] == true) {
-                    req.session.organiserId = req.session.userId;
+                    req.session.organiserId = req.session.userId;// 1 day
+                    // res.cookie('token', token, { expires });
+
                     res.status(200).json({ "isOrganiser": true, "message": "Logged in Successfully as Organiser" });
                 } else {
+                    // res.cookie('token', 'cookie', { expires });
                     req.session.performerId = req.session.userId;
                     res.status(200).json({ "isOrganiser": false, "message": "Logged in Successfully as Performer" });
                 }
@@ -67,6 +72,9 @@ function apply_user_api_routes(app) {
                 await doQuery(q);
                 user_read = await doQuery(`SELECT user_id FROM ${tableNames.userTable} WHERE name = '${data["username"]}'`);
                 req.session.userId = user_read.rows[0]["user_id"];
+                const token = 'mytoken'; // Generate a unique token
+                const expires = new Date(Date.now() + 24 * 60 * 60 * 1000); day
+                res.cookie('token', token, { expires });
 
                 if (data["isOrganiser"] == "true") {
                     let id = user_read.rows[0]["user_id"];
@@ -77,7 +85,6 @@ function apply_user_api_routes(app) {
                     let id = user_read.rows[0]["user_id"];
                     q_2 = `INSERT INTO ${tableNames.perfTable} (user_id) VALUES ('${id}');`;
                     await doQuery(q_2);
-
                     req.session.performerId = id;
                 }
 

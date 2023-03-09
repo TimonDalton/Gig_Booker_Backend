@@ -174,10 +174,9 @@ function apply_event_api_routes(app) {
         console.log("CreateEvent in Backend/routes/api/routes.api.js");
         console.log("This is the received JSON request:");
         let data = req.body;
-        console.log("REQ REQ REQ REQ");
         console.log(req.session);
         const insert_statement = `
-            INSERT INTO ${tableNames.eventTable} (  name, organiser_id, starttime, final_payment, location, location_name, description, status)
+            INSERT INTO ${tableNames.eventTable} (name, organiser_id, starttime, final_payment, location, location_name, description, status)
             VALUES('${data["name"]}','${req.session.userId}','${data["startTime"]}','${data["payment"]}','(4,3)','${data["locationName"]}','${data["description"]}','${data["status"]}');  
         `;
 

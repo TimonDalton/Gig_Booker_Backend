@@ -1,40 +1,49 @@
 var path = require('path');
- 
-//send
-app.get('/', function(req, res){
-    var options = {
-        root: path.join(__dirname)
-    };
-     
-    var fileName = 'Hello.txt';
-    res.sendFile(fileName, options, function (err) {
-        if (err) {
-            next(err);
-        } else {
-            console.log('Sent:', fileName);
+const { log } = require('../configs/logging');
+var fs = require('fs');
+
+
+
+let types = {
+    'image':'jpg',
+    'video':'mp4',
+    'audio':'mp3',
+
+}
+
+function generateFileName(userId,mediaId,type){
+    let typeExtention = types[type];
+    if (typeExtention == null){
+        log(`Error: Type "${type}" not in list.`);
+        return null;
+    }else{
+        return 'U'+userId.toString()+'#'+mediaId.toString()+'.'+typeExtention;
+    }
+}
+
+let dir = __dirname+'../../public/files';
+function fileDirInit(){
+    if (!fs.existsSync(dir)){
+        fs.mkdirSync(dir, { recursive: true });
+    }   
+}
+
+function saveFile(fileName,file){
+    fs.writeFile(dir+'/'+fileName,file.data,(e)=>{
+        if(e){
+            log("Didn't work because of:");
+            log(e);
+            return false;
+        }else{                    
+            log(`File "${fileName}" saved in "${dir}"`);
+            return true;
         }
     });
-});
+}
 
-//get
-var express = require('express'),
-    fs = require('fs'),
-    url = require('url');
-var app = express();
 
-app.use('/public', express.static(__dirname + '/public'));  
-app.use(express.static(__dirname + '/public')); 
-
-app.post('/receive', function(request, respond) {
-    var body = '';
-    filePath = __dirname + '/public/data.txt';
-    request.on('data', function(data) {
-        body += data;
-    });
-
-    request.on('end', function (){
-        fs.appendFile(filePath, body, function() {
-            respond.end();
-        });
-    });
-});
+module.exports = {
+    generateFileName: generateFileName,
+    saveFile: saveFile,
+    fileDirInit: fileDirInit,
+}
