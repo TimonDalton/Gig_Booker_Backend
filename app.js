@@ -2,7 +2,9 @@ var express = require('express')
 var session = require('express-session');
 const {initDB,dbClientPool} = require("./src/configs/db.config");
 const {apply_routes} = require("./src/routes/routes");
+const {fileDirInit} = require("./src/configs/file.storage");
 const fileUpload = require('express-fileupload');
+const cookieParser = require('cookie-parser');
 
 // import { initDB } from './src/configs/db.config.js';
 
@@ -29,7 +31,9 @@ app.use(session({
   resave: false,
   saveUninitialized: true
 }));
+app.use(cookieParser());
 app.use(fileUpload());
+fileDirInit();
 
 apply_routes(app)
 
