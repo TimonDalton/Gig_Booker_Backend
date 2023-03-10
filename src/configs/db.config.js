@@ -146,7 +146,6 @@ CREATE TABLE IF NOT EXISTS "${accountMediaTableName}" (
 
   media_id INT GENERATED ALWAYS AS IDENTITY, 
   user_id INT,
-  file_name VARCHAR(2000) NOT NULL,
   file_type VARCHAR(2000) NOT NULL,
   upload_time  timestamp,
   description VARCHAR(2000) NOT NULL,

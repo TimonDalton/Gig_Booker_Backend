@@ -31,7 +31,7 @@ function fileDirInit(){
 function saveFile(fileName,file){
     fs.writeFile(dir+'/'+fileName,file.data,(e)=>{
         if(e){
-            log("Didn't work because of:");
+            log("saveFile didn't work because of:");
             log(e);
             return false;
         }else{                    

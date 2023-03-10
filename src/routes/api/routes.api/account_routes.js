@@ -62,41 +62,55 @@ function apply_account_api_routes(app) {
         }
         let data = await doQuery(`
             INSERT INTO ${tableNames.accountMediaTableName} (user_id,  file_type,  upload_time,  description)
-            VALUES('${req.session.userId}, '${req.body["fileType"]}', '${req.body["uploadTime"]}, '${req.body["description"]}') 
+            VALUES('${req.session.userId}', '${req.body["fileType"]}', '${req.body["uploadTime"]}', '${req.body["description"]}') 
             RETURNING media_id;        
         `);
-        log('data');
-        log(data);
-        let mediaId = data['media_id']
-        let fileName = generateFileName(req.session.userId,mediaId);
+        let mediaId = data.rows[0]['media_id'];
+        log('mediaId');
+        log(mediaId);
+        let fileName = generateFileName(req.session.userId,mediaId,req.body["fileType"]);
         let file = req.files.file;
         let successfulSave = saveFile(fileName,file);
-        if (!successfulSave){
+        if (successfulSave == false){
             await doQuery(`
-                DELETE ${tableNames.accountMediaTableName}
-                WHERE media_id = "${mediaId}"
+                DELETE FROM ${tableNames.accountMediaTableName}
+                WHERE media_id = '${mediaId}'
             `);
-            log('Save unsuccessful. Entry for file deleted with id: '+mediaId.toString());
+            log(`Save unsuccessful. Entry for file deleted with id: ${mediaId}`);
         }
 
     });
 
     //Here a new event will be created and the information from the JSON will be inserted
-    app.post('/api/getMediaItem', jsonParser, async function (req, res, next) {
-        console.log("In /api/createMediaItem");
-        const insert_statement = `
-            INSERT INTO ${tableNames.eventTable} (  name, organiser_id, starttime, final_payment, location, location_name, description, status)
-            VALUES('${data["name"]}','${req.session.userId}','${data["startTime"]}','${data["payment"]}','(4,3)','${data["locationName"]}','${data["description"]}','${data["status"]}');  
-        `;
-
-        try {
-            await doQuery(insert_statement);
-        } catch (error) {
-            console.log("READ TO DB ERROR ON CREATE EVENT");
-            console.log(error);
+    app.post('/api/getAccountMedia', jsonParser, async function (req, res, next) {
+        console.log("In /api/getAccountMedia");
+        
+        let data = doQuery(`
+            SELECT media_id,user_id,upload_time,description FROM account_media
+            WHERE user_id = '${user.session.userId}'
+        ;`);
+        let filesPaths = [];
+        const prefix = '../../../public/files';
+        for(let i = 0;i<data.rows.length;i++){
+            let row = data.rows[i];
+            filesPaths.push(prefix+generateFileName(row['user_id'],row['media_id'],row['type']));
         }
-        console.log('Sending back received data');
-        res.send(data);
+
+        // const file1Path = '/path/to/your/file1'; // Replace with your file 1 path
+        // const file2Path = '/path/to/your/file2'; // Replace with your file 2 path
+      
+        const archiveName = 'zipped_media.zip'; // Replace with your archive name
+      
+        res.set('Content-Type', 'application/zip');
+        res.set('Content-Disposition', `attachment; filename= ${archiveName}`);
+        res.json(data);
+        res.zip(filesPaths, archiveName, (err) => {
+          if (err) {
+            console.log('Error sending files:', err);
+          } else {
+            console.log('Files sent successfully');
+          }
+        });
     });
 }
 
