@@ -1,7 +1,7 @@
 var path = require('path');
 const { log } = require('../configs/logging');
 var fs = require('fs');
-
+const {redisCli} = require('../configs/redis');
 
 
 let types = {
@@ -40,10 +40,67 @@ function saveFile(fileName,file){
         }
     });
 }
+function deleteFile(fileName){
+    var filePath = dir+fileName; 
+    fs.unlink(filePath);
+}
 
+function saveDataAsFilename(data,fileName){
+    fs.writeFile(dir+'/'+fileName,data,(e)=>{
+        if(e){
+            log("saveDataAsFilename didn't work because of:");
+            log(e);
+            return false;
+        }else{                    
+            log(`File "${fileName}" saved in "${dir}"`);
+            return true;
+        }
+    });
+}
+
+
+function numberToName(num){//this should eventually be some form of hash
+    return num.toString;
+}
+function getNewAccountMediaJsonFileName(){
+    redisCli.get('accountMediaJsonFileName',(err,data)=>{
+        if (err){
+            log(err);
+        }
+        if (data != null){
+            let num = parseInt(data);
+            num ++;
+            regisCli.set('accountMediaJsonFileName',num);
+            return numberToName(num);
+        }else{
+            regisCli.set('accountMediaJsonFileName',0);
+            return numberToName(0);
+        }
+    });
+}
+
+function getNewAccountMediaZipFileName(){
+    redisCli.get('accountMediaZipFileName',(err,data)=>{
+        if (err){
+            log(err);
+        }
+        if (data != null){
+            let num = parseInt(data);
+            num ++;
+            regisCli.set('accountMediaZipFileName',num);
+            return numberToName(num);
+        }else{
+            regisCli.set('accountMediaZipFileName',0);
+            return numberToName(0);
+        }
+    });
+}
 
 module.exports = {
     generateFileName: generateFileName,
     saveFile: saveFile,
+    saveDataAsFilename:saveDataAsFilename,
     fileDirInit: fileDirInit,
+    getNewAccountMediaJsonFileName:getNewAccountMediaJsonFileName,
+    getNewAccountMediaZipFileName:getNewAccountMediaZipFileName,
 }

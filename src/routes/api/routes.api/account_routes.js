@@ -3,7 +3,14 @@ var bodyParser = require('body-parser');
 var jsonParser = bodyParser.json();
 const { log } = require('../../../configs/logging');
 let fs = require('fs');
-let {generateFileName,saveFile} = require('../../../configs/file.storage');
+let {
+    generateFileName,
+    saveFile,
+    getNewAccountMediaJsonFileName,
+    saveDataAsFilename,
+    getNewAccountMediaZipFileName,
+    deleteFile
+} = require('../../../configs/file.storage');
 
 
 function apply_account_api_routes(app) {
@@ -95,22 +102,25 @@ function apply_account_api_routes(app) {
             let row = data.rows[i];
             filesPaths.push(prefix+generateFileName(row['user_id'],row['media_id'],row['type']));
         }
-
+        let jsonFileName = getNewAccountMediaJsonFileName() +'.json';
+        saveDataAsFilename(data.rows,jsonFileName);
         // const file1Path = '/path/to/your/file1'; // Replace with your file 1 path
         // const file2Path = '/path/to/your/file2'; // Replace with your file 2 path
-      
-        const archiveName = 'zipped_media.zip'; // Replace with your archive name
+        
+        const archiveFileName = getNewAccountMediaZipFileName()+'.zip'; // Replace with your archive name
       
         res.set('Content-Type', 'application/zip');
-        res.set('Content-Disposition', `attachment; filename= ${archiveName}`);
+        res.set('Content-Disposition', `attachment; filename= ${archiveFileName}`);
         res.json(data);
-        res.zip(filesPaths, archiveName, (err) => {
+        res.zip(filesPaths, archiveFileName, (err) => {
           if (err) {
             console.log('Error sending files:', err);
           } else {
             console.log('Files sent successfully');
           }
         });
+        deleteFile(jsonFileName);
+        deleteFile(archiveFileName);
     });
 }
 
