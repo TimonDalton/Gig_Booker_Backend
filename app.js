@@ -5,6 +5,7 @@ const {apply_routes} = require("./src/routes/routes");
 const {fileDirInit} = require("./src/configs/file.storage");
 const fileUpload = require('express-fileupload');
 const cookieParser = require('cookie-parser');
+const {initRedisClient} = require('./src/configs/redis');
 
 // import { initDB } from './src/configs/db.config.js';
 
@@ -34,6 +35,7 @@ app.use(session({
 app.use(cookieParser());
 app.use(fileUpload());
 fileDirInit();
+initRedisClient();
 
 apply_routes(app)
 
