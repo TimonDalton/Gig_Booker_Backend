@@ -89,38 +89,48 @@ function apply_account_api_routes(app) {
     });
 
     //Here a new event will be created and the information from the JSON will be inserted
-    app.post('/api/getAccountMedia', jsonParser, async function (req, res, next) {
+    app.get('/api/getAccountMedia', jsonParser, async function (req, res, next) {
         console.log("In /api/getAccountMedia");
         
-        let data = doQuery(`
+        log('Request:');
+        log(req);
+        let data = await doQuery(`
             SELECT media_id,user_id,upload_time,description FROM account_media
-            WHERE user_id = '${user.session.userId}'
+            WHERE user_id = '${req.session.userId}'
         ;`);
-        let filesPaths = [];
-        const prefix = '../../../public/files';
-        for(let i = 0;i<data.rows.length;i++){
-            let row = data.rows[i];
-            filesPaths.push(prefix+generateFileName(row['user_id'],row['media_id'],row['type']));
-        }
-        let jsonFileName = getNewAccountMediaJsonFileName() +'.json';
-        saveDataAsFilename(data.rows,jsonFileName);
-        // const file1Path = '/path/to/your/file1'; // Replace with your file 1 path
-        // const file2Path = '/path/to/your/file2'; // Replace with your file 2 path
+        log('data:');
+        log(data);
+        try{
+            let filesPaths = [];
+            const prefix = '../../../public/files';
+            for(let i = 0;i<data.rowCount;i++){
+                let row = data.rows[i];
+                filesPaths.push(prefix+generateFileName(row['user_id'],row['media_id'],row['type']));
+            }
+            let jsonFileName = await getNewAccountMediaJsonFileName() +'.json';
+            saveDataAsFilename(JSON.stringify(data.rows),jsonFileName);
+            // const file1Path = '/path/to/your/file1'; // Replace with your file 1 path
+            // const file2Path = '/path/to/your/file2'; // Replace with your file 2 path
+            
+            const archiveFileName = await getNewAccountMediaZipFileName()+'.zip'; // Replace with your archive name
         
-        const archiveFileName = getNewAccountMediaZipFileName()+'.zip'; // Replace with your archive name
-      
-        res.set('Content-Type', 'application/zip');
-        res.set('Content-Disposition', `attachment; filename= ${archiveFileName}`);
-        res.json(data);
-        res.zip(filesPaths, archiveFileName, (err) => {
-          if (err) {
-            console.log('Error sending files:', err);
-          } else {
-            console.log('Files sent successfully');
-          }
-        });
-        deleteFile(jsonFileName);
-        deleteFile(archiveFileName);
+            res.set('Content-Type', 'application/zip');
+            res.set('Content-Disposition', `attachment; filename= ${archiveFileName}`);
+            res.json(data);
+            log('File Paths being zipped:');
+            log(filesPaths);
+            res.zip(filesPaths, archiveFileName, (err) => {
+            if (err) {
+                console.log('Error sending files:', err);
+            } else {
+                console.log('Files sent successfully');
+            }
+            });
+        }catch(e){
+            log(e);
+        }
+        // deleteFile(jsonFileName);
+        // deleteFile(archiveFileName);
     });
 }
 

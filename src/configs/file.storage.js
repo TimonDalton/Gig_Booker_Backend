@@ -1,7 +1,7 @@
 var path = require('path');
 const { log } = require('../configs/logging');
 var fs = require('fs');
-const {redisCli} = require('../configs/redis');
+const {getClient} = require('../configs/redis');
 
 
 let types = {
@@ -62,38 +62,37 @@ function saveDataAsFilename(data,fileName){
 function numberToName(num){//this should eventually be some form of hash
     return num.toString;
 }
-function getNewAccountMediaJsonFileName(){
-    redisCli.get('accountMediaJsonFileName',(err,data)=>{
+
+async function getNewAccountMediaJsonFileName(){
+    let name = 'accountMediaJsonFileName';
+    console.log('getClient()');
+    console.log(getClient());
+    let res = await getClient().get(name,(err,data)=>{
         if (err){
             log(err);
         }
-        if (data != null){
-            let num = parseInt(data);
-            num ++;
-            regisCli.set('accountMediaJsonFileName',num);
-            return numberToName(num);
-        }else{
-            regisCli.set('accountMediaJsonFileName',0);
-            return numberToName(0);
-        }
     });
+
+    let num = parseInt(res);
+    num ++;
+    await regisCli.set(name,num.toString());
+    return res;
 }
 
-function getNewAccountMediaZipFileName(){
-    redisCli.get('accountMediaZipFileName',(err,data)=>{
+async function getNewAccountMediaZipFileName(){
+    let name = 'accountMediaZipFileName';
+    let res = '';
+    let data = await getClient().get(name,(err,data)=>{
         if (err){
             log(err);
-        }
-        if (data != null){
-            let num = parseInt(data);
-            num ++;
-            regisCli.set('accountMediaZipFileName',num);
-            return numberToName(num);
-        }else{
-            regisCli.set('accountMediaZipFileName',0);
-            return numberToName(0);
-        }
+        }    
     });
+    let num = parseInt(data);
+    num ++;
+    await getClient().set(name,num);
+    res = numberToName(num.toString());
+
+    return res; 
 }
 
 module.exports = {
@@ -103,4 +102,5 @@ module.exports = {
     fileDirInit: fileDirInit,
     getNewAccountMediaJsonFileName:getNewAccountMediaJsonFileName,
     getNewAccountMediaZipFileName:getNewAccountMediaZipFileName,
+    deleteFile:deleteFile,
 }

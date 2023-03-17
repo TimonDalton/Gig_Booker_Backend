@@ -13,7 +13,8 @@ const {initRedisClient} = require('./src/configs/redis');
 const { Pool } = require("pg");
 
 (async () => {
-    initDB();
+    await initDB();
+    await initRedisClient();
 
   // let a = doQuery(read_all);
   // console.log(a.rows);   
@@ -35,7 +36,6 @@ app.use(session({
 app.use(cookieParser());
 app.use(fileUpload());
 fileDirInit();
-initRedisClient();
 
 apply_routes(app)
 
