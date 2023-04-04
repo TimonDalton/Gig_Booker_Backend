@@ -1,7 +1,7 @@
 var path = require('path');
 const { log } = require('../configs/logging');
 var fs = require('fs');
-const {getClient} = require('../configs/redis');
+const redis = require('../configs/redis');
 
 
 let types = {
@@ -15,13 +15,14 @@ function generateFileName(userId,mediaId,type){
     let typeExtention = types[type];
     if (typeExtention == null){
         log(`Error: Type "${type}" not in list.`);
+        log(`Failure on: userId ${userId}, mediaId ${mediaId}, type ${type}`);
         return null;
     }else{
         return 'U'+userId.toString()+'#'+mediaId.toString()+'.'+typeExtention;
     }
 }
 
-let dir = __dirname+'../../public/files';
+let dir = __dirname+'../../../public/files';
 function fileDirInit(){
     if (!fs.existsSync(dir)){
         fs.mkdirSync(dir, { recursive: true });
@@ -65,9 +66,9 @@ function numberToName(num){//this should eventually be some form of hash
 
 async function getNewAccountMediaJsonFileName(){
     let name = 'accountMediaJsonFileName';
-    console.log('getClient()');
-    console.log(getClient());
-    let res = await getClient().get(name,(err,data)=>{
+    console.log('redis.getClient()');
+    console.log(redis.getClient());
+    let res = await redis.getClient().get(name,(err,data)=>{
         if (err){
             log(err);
         }
@@ -75,25 +76,27 @@ async function getNewAccountMediaJsonFileName(){
 
     let num = parseInt(res);
     num ++;
-    await regisCli.set(name,num.toString());
+    await redis.getClient().set(name,num.toString());
     return res;
 }
 
 async function getNewAccountMediaZipFileName(){
     let name = 'accountMediaZipFileName';
     let res = '';
-    let data = await getClient().get(name,(err,data)=>{
+    let data = await redis.getClient().get(name,(err,data)=>{
         if (err){
             log(err);
         }    
     });
     let num = parseInt(data);
     num ++;
-    await getClient().set(name,num);
+    await redis.getClient().set(name,num);
     res = numberToName(num.toString());
 
     return res; 
 }
+
+
 
 module.exports = {
     generateFileName: generateFileName,

@@ -23,7 +23,7 @@ function apply_chat_api_routes(app) {
         ret['contact_name'] = data[0]['name'];
 
         data = await doQuery(`
-            SELECT message_id,organiser_id,performer_id,chat_id,message,time_sent,organiser_sent FROM ${tableNames.messageTable}
+            SELECT message_id,organiser_id,performer_id,chat_id,message,time_sent,organiser_sent,type FROM ${tableNames.messageTable}
             WHERE (organiser_id = ${userId} OR performer_id = ${userId})
             AND chat_id = ${chatId}
             ORDER BY message_id DESC LIMIT 1; 
@@ -63,7 +63,7 @@ function apply_chat_api_routes(app) {
         }
         for (let i = 0; i < ret.length; i++) {
             data = await doQuery(`
-                SELECT message_id,chat_id,message,time_sent,organiser_sent FROM ${tableNames.messageTable}
+                SELECT message_id,chat_id,message,time_sent,organiser_sent,type FROM ${tableNames.messageTable}
                 WHERE chat_id = ${ret[i]['chat_id']}
                 ORDER BY message_id DESC LIMIT 1; 
             `);
@@ -108,7 +108,7 @@ function apply_chat_api_routes(app) {
         }
         for (let i = 0; i < ret.length; i++) {
             data = await doQuery(`
-                SELECT message_id,chat_id,message,time_sent,organiser_sent FROM ${tableNames.messageTable}
+                SELECT message_id,chat_id,message,time_sent,organiser_sent,type FROM ${tableNames.messageTable}
                 WHERE chat_id = ${ret[i]['chat_id']}
                 ORDER BY message_id DESC LIMIT 1; 
             `);

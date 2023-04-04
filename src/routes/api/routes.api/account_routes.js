@@ -3,6 +3,8 @@ var bodyParser = require('body-parser');
 var jsonParser = bodyParser.json();
 const { log } = require('../../../configs/logging');
 let fs = require('fs');
+const AdmZip = require('adm-zip');
+
 let {
     generateFileName,
     saveFile,
@@ -25,19 +27,19 @@ function apply_account_api_routes(app) {
             return res.status(400).send('No files were uploaded.');
         }
         let fileName = 'jeff.jpg';
-        filePath = __dirname + '../../../../../test/public/'+fileName;
+        filePath = __dirname + '../../../../../test/public/' + fileName;
         let file = req.files.file;
-        try{
-            fs.writeFile(filePath,file.data,(e)=>{
-                if(e){
+        try {
+            fs.writeFile(filePath, file.data, (e) => {
+                if (e) {
                     console.log("Didn't work because of:");
                     console.log(e);
-                }else{                    
+                } else {
                     console.log('Worked!');
                 }
                 res.status(200).send('Error uploading file');
             });
-        }catch(e){
+        } catch (e) {
             res.status(401).send('Error uploading file');
             console.log('Error');
             console.log(e);
@@ -75,10 +77,10 @@ function apply_account_api_routes(app) {
         let mediaId = data.rows[0]['media_id'];
         log('mediaId');
         log(mediaId);
-        let fileName = generateFileName(req.session.userId,mediaId,req.body["fileType"]);
+        let fileName = generateFileName(req.session.userId, mediaId, req.body["fileType"]);
         let file = req.files.file;
-        let successfulSave = saveFile(fileName,file);
-        if (successfulSave == false){
+        let successfulSave = saveFile(fileName, file);
+        if (successfulSave == false) {
             await doQuery(`
                 DELETE FROM ${tableNames.accountMediaTableName}
                 WHERE media_id = '${mediaId}'
@@ -87,49 +89,73 @@ function apply_account_api_routes(app) {
         }
 
     });
+    app.get('/api/getSendMediaItemTest', jsonParser, async function (req, res, next) {
+        console.log("In /api/getSendMediaItemTest");
 
+        const prefix = __dirname + '../../../../../public/files/';
+        var fileName = 'U1#1.jpg';
+        var filePath = prefix+ fileName;
+        log(`Sending ${filePath}`);
+        // var stat = fs.statSync(filePath);
+    
+        const zip = new AdmZip();
+        zip.addLocalFile(filePath);
+
+
+        let zipBuffer = zip.toBuffer();
+        res.set({
+            'Content-Type': 'application/zip',
+            'Content-Disposition': `attachment; filename=${'file.zip'}`,
+        });
+    
+        // var readStream = fs.createReadStream(filePath);
+        // // We replaced all the event handlers with a simple call to readStream.pipe()
+        // readStream.pipe(res);
+        res.send(zipBuffer);
+    });
     //Here a new event will be created and the information from the JSON will be inserted
     app.get('/api/getAccountMedia', jsonParser, async function (req, res, next) {
         console.log("In /api/getAccountMedia");
-        
-        log('Request:');
-        log(req);
+
+
         let data = await doQuery(`
-            SELECT media_id,user_id,upload_time,description FROM account_media
+            SELECT media_id,user_id, file_type,upload_time,description FROM account_media
             WHERE user_id = '${req.session.userId}'
         ;`);
-        log('data:');
-        log(data);
-        try{
-            let filesPaths = [];
-            const prefix = '../../../public/files';
-            for(let i = 0;i<data.rowCount;i++){
-                let row = data.rows[i];
-                filesPaths.push(prefix+generateFileName(row['user_id'],row['media_id'],row['type']));
-            }
-            let jsonFileName = await getNewAccountMediaJsonFileName() +'.json';
-            saveDataAsFilename(JSON.stringify(data.rows),jsonFileName);
-            // const file1Path = '/path/to/your/file1'; // Replace with your file 1 path
-            // const file2Path = '/path/to/your/file2'; // Replace with your file 2 path
-            
-            const archiveFileName = await getNewAccountMediaZipFileName()+'.zip'; // Replace with your archive name
-        
-            res.set('Content-Type', 'application/zip');
-            res.set('Content-Disposition', `attachment; filename= ${archiveFileName}`);
-            res.json(data);
+
+        const zip = new AdmZip();
+        let filesPaths = [];
+        const prefix = __dirname + '../../../../../public/files/';
+        for (let i = 0; i < data.rowCount; i++) {
+            let row = data.rows[i];
+            filesPaths.push(prefix + generateFileName(row['user_id'], row['media_id'], row['file_type']));
+        }
+        let jsonFileName = await getNewAccountMediaJsonFileName() + '.json';
+        try {
+
+            saveDataAsFilename(JSON.stringify(data.rows), jsonFileName);
+            filesPaths.push(prefix + jsonFileName);
+            filesPaths.forEach((path) => {
+                zip.addLocalFile(path);
+            });
+            const archiveFileName = await getNewAccountMediaZipFileName() + '.zip'; // Replace with your archive name
+            const zipBuffer = zip.toBuffer();
+            res.set({
+                'Content-Type': 'application/zip',
+                'Content-Disposition': `attachment; filename=${archiveFileName}`,
+            });
+
+            // res.set('Content-Type', 'application/zip');
+            // res.set('Content-Disposition', `attachment; filename= ${archiveFileName}`);
+
             log('File Paths being zipped:');
             log(filesPaths);
-            res.zip(filesPaths, archiveFileName, (err) => {
-            if (err) {
-                console.log('Error sending files:', err);
-            } else {
-                console.log('Files sent successfully');
-            }
-            });
-        }catch(e){
+            res.send(zipBuffer);
+        } catch (e) {
+            log("Error:");
             log(e);
         }
-        // deleteFile(jsonFileName);
+        deleteFile(jsonFileName);
         // deleteFile(archiveFileName);
     });
 }

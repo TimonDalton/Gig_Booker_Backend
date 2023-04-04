@@ -30,6 +30,7 @@ async function initRedisClient () {
 
     });
 }
+
 function getClient(){
     return redisClient;
 }
