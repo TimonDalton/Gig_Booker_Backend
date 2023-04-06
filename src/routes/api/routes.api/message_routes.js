@@ -44,8 +44,30 @@ function apply_message_api_routes(app) {
         console.log('Done with Create Message');
         res.send(data);
     });
+    
+    app.post('api/updateMessageType', jsonParser, async function (req, res, next) {
+        console.log("In /api/updateMessageType");
+        let data = req.body;
+        const insert_statement = `
+            UPDATE ${tableNames.messageTable} 
+            SET ("type" = '${data["type"]}')
+            WHERE "chat_id" = '${data["chatId"]}' 
+            ;
+
+        `;
+
+        try {
+            await doQuery(insert_statement);
+        } catch (error) {
+            console.log("READ TO DB ERROR ON CREATE CHAT");
+            console.log(error);
+        }
+        console.log('Done with Create Message');
+        res.send(data);
+    });
 
 }
+
 
 module.exports = {
     apply_message_api_routes: apply_message_api_routes,

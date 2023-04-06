@@ -14,8 +14,8 @@ const {apply_account_api_routes} = require("./routes.api/account_routes");
 function apply_api_routes(app){
 
     pre_directory_routes(app);
-    
     apply_user_api_routes(app);
+
     apply_event_api_routes(app);
     apply_chat_api_routes(app);
     apply_message_api_routes(app);
@@ -41,13 +41,17 @@ function pre_directory_routes(app){
         // randomNumber=randomNumber.substring(2,randomNumber.length);
         // res.cookie('cookieName',randomNumber, { maxAge: 900000, httpOnly: true });
         // console.log('cookie created successfully');
+            if(req.url.includes('signup') || req.url.includes('login')){//only route permitted to not be signed in
+                next();
+            }
+            res.json({"requiredSignIn":true});
         } else {
         // yes, cookie was already present 
             console.log('cookie exists', cookie);
+            console.log('req headers');
+            console.log(req.headers);
+            next(); // <-- important!
         } 
-        console.log('req headers');
-        console.log(req.headers);
-        next(); // <-- important!
     });
 }
 
