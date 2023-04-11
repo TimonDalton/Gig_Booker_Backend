@@ -6,12 +6,7 @@ var jsonParser = bodyParser.json()
 
 function apply_routes(app){
 
-    app.get('/',function(req,res,next){
-        res.send(`
-            <p>Home page</p>
-        `);
-    });
-    
+
     // CASE OF "/api/*"
     apply_api_routes(app);
     

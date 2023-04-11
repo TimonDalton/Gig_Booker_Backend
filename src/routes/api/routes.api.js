@@ -33,9 +33,10 @@ function pre_directory_routes(app){
     // set a cookie
     app.use(function (req, res, next) {
         // check if client sent cookie
-        var cookie = req.cookies.token;
-        if (cookie === undefined) {
-            console.log('No cookie with request');
+        var cookie = req.cookies['connect.sid'];
+        if (cookie == undefined) {
+            console.log('No cookie with request: '+req.url);
+            console.log('Cookie: '+cookie);
         // // no: set a new cookie
         // var randomNumber=Math.random().toString();
         // randomNumber=randomNumber.substring(2,randomNumber.length);
@@ -43,8 +44,9 @@ function pre_directory_routes(app){
         // console.log('cookie created successfully');
             if(req.url.includes('signup') || req.url.includes('login')){//only route permitted to not be signed in
                 next();
+            }else{
+                res.json({"requiredSignIn":true});
             }
-            res.json({"requiredSignIn":true});
         } else {
         // yes, cookie was already present 
             console.log('cookie exists', cookie);
