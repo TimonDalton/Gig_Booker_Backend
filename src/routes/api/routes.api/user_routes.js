@@ -73,7 +73,7 @@ function apply_user_api_routes(app) {
                 user_read = await doQuery(`SELECT user_id FROM ${tableNames.userTable} WHERE name = '${data["username"]}'`);
                 req.session.userId = user_read.rows[0]["user_id"];
                 const token = 'mytoken'; // Generate a unique token
-                const expires = new Date(Date.now() + 24 * 60 * 60 * 1000); day
+                const expires = new Date(Date.now() + 24 * 60 * 60 * 1000); 
                 res.cookie('token', token, { expires });
 
                 if (data["isOrganiser"] == "true") {

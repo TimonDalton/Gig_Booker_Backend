@@ -14,6 +14,9 @@ function apply_event_api_routes(app) {
 
         console.log(req.session);
         let data = await doQuery(`SELECT * FROM ${tableNames.eventTable} WHERE organiser_id = '${req.session.userId}'`);
+        if (data == null){
+            console.log('bad request body:');
+        }
         console.log(`/api/getEventOrg: data rows:`);
         let respJson = '';
         if (data) {
@@ -48,8 +51,8 @@ function apply_event_api_routes(app) {
         console.log("In /api/applyForEventPerf");
         res.contentType('application/json');
         //user_read = await doQuery(`SELECT name,password,user_id,user_is_organiser FROM ${tableNames.userTable} WHERE name = '${data["username"]}'`);
-        let eventId = req.body["eventId"];
-        let organiserId = req.body["organiserId"];
+        let eventId = req.body["event_id"];
+        let organiserId = req.body['location_name'];
 
         let data = await doQuery(
             `SELECT * FROM ${tableNames.perfEventIntTable} 
@@ -97,7 +100,7 @@ function apply_event_api_routes(app) {
         console.log("In /api/deleteEventApplicationPerf");
         res.contentType('application/json');
         //user_read = await doQuery(`SELECT name,password,user_id,user_is_organiser FROM ${tableNames.userTable} WHERE name = '${data["username"]}'`);
-        let eventId = req.body["eventId"];
+        let eventId = req.body["event_id"];
         try {
             await doQuery(//delete performer event link
                 `DELETE FROM ${tableNames.perfEventIntTable} 
@@ -129,7 +132,7 @@ function apply_event_api_routes(app) {
         let data = await doQuery(
             `SELECT * FROM ${tableNames.perfEventIntTable} 
                 WHERE "performer_id" = ${req.session.userId}
-                AND "event_id" = ${req.body["eventId"]}`
+                AND "event_id" = ${req.body["event_id"]}`
         );
         if (!data) {
             console.log("/getHasAppliedForEvent getdata error");
@@ -177,7 +180,7 @@ function apply_event_api_routes(app) {
         console.log(req.session);
         const insert_statement = `
             INSERT INTO ${tableNames.eventTable} (name, organiser_id, starttime, final_payment, location, location_name, description, status)
-            VALUES('${data["name"]}','${req.session.userId}','${data["startTime"]}','${data["payment"]}','(4,3)','${data["locationName"]}','${data["description"]}','${data["status"]}');  
+            VALUES('${data["name"]}','${req.session.userId}','${data["starttime"]}','${data["final_payment"]}','(4,3)','${data["location_name"]}','${data["description"]}','${data["status"]}');  
         `;
 
         try {
@@ -185,6 +188,8 @@ function apply_event_api_routes(app) {
         } catch (error) {
             console.log("READ TO DB ERROR ON CREATE EVENT");
             console.log(error);
+            console.log('json:');
+            console.log(req.json);
         }
         console.log('Sending back received data');
         res.send(data);
@@ -222,13 +227,14 @@ function apply_event_api_routes(app) {
         // console.log(req.body);
         let data = req.body;
 
+        //TODO add duration
         const edit_statement = `
             UPDATE ${tableNames.eventTable}
             SET name = '${data["name"]}',
-                starttime = '${data["startTime"]}',
-                final_payment = '${data["payment"]}',
+                starttime = '${data["starttime"]}',
+                final_payment = '${data["final_payment"]}',
                 location = '${3},${4}',
-                location_name = '${data["locationName"]}',
+                location_name = '${data["location_name"]}',
                 description = '${data["description"]}',
                 status = '${data["status"]}'
             WHERE event_id = '${data["event_id"]}'

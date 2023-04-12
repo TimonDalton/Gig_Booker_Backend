@@ -36,7 +36,7 @@ function pre_directory_routes(app){
         var cookie = req.cookies['connect.sid'];
         if (cookie == undefined) {
             console.log('No cookie with request: '+req.url);
-            console.log('Cookie: '+cookie);
+            // console.log('Cookie: '+cookie);
         // // no: set a new cookie
         // var randomNumber=Math.random().toString();
         // randomNumber=randomNumber.substring(2,randomNumber.length);
@@ -49,9 +49,9 @@ function pre_directory_routes(app){
             }
         } else {
         // yes, cookie was already present 
-            console.log('cookie exists', cookie);
-            console.log('req headers');
-            console.log(req.headers);
+            // console.log('cookie exists', cookie);
+            // console.log('req headers');
+            // console.log(req.headers);
             next(); // <-- important!
         } 
     });

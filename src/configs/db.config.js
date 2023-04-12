@@ -189,6 +189,7 @@ async function doQuery(query) {
     console.log(query);
     console.log("Got: ");
     console.log(e);
+    throw e;
   }
 }
 

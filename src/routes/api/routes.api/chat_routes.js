@@ -160,7 +160,7 @@ function apply_chat_api_routes(app) {
 
         const insert_statement = `
             INSERT INTO ${tableNames.chatTable} (organiser_id,  name)
-            VALUES('${data["organiserId"]}','${data["name"]}');  
+            VALUES('${data['location_name']}','${data["name"]}');  
         `;
 
         try {
