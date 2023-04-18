@@ -88,7 +88,7 @@ const events_table_init_create_query = `
 CREATE TABLE IF NOT EXISTS "${eventTableName}" (
 
   event_id INT GENERATED ALWAYS AS IDENTITY,
-  organiser_id INTEGER,
+  organiser_id INTEGER NOT NULL,
   name VARCHAR(100) NOT NULL,
   starttime  timestamp,
   final_payment NUMERIC(10,2),
@@ -96,6 +96,7 @@ CREATE TABLE IF NOT EXISTS "${eventTableName}" (
   location_name VARCHAR(200),
   description VARCHAR(2000),
   status VARCHAR(100),
+  booked_artist_id INT,
 
   PRIMARY KEY ("event_id"),
 

@@ -1,7 +1,7 @@
-const {doQuery,tableNames} = require("../../../configs/db.config");
+const { doQuery, tableNames } = require("../../../configs/db.config");
 var bodyParser = require('body-parser')
 var jsonParser = bodyParser.json()
-const {log} = require('../../../configs/logging');
+const { log } = require('../../../configs/logging');
 
 function apply_message_api_routes(app) {
 
@@ -44,25 +44,64 @@ function apply_message_api_routes(app) {
         console.log('Done with Create Message');
         res.send(data);
     });
-    
+
     app.post('/api/updateMessageType', jsonParser, async function (req, res, next) {
         console.log("In /api/updateMessageType");
         let data = req.body;
-        const insert_statement = `
-            UPDATE ${tableNames.messageTable} 
-            SET ("type" = '${data["type"]}')
-            WHERE "chat_id" = '${data["messageId"]}' 
-            ;
-        `;
-
+        let updateErrorOccured = false;
         try {
-            await doQuery(insert_statement);
+            await doQuery(
+                `
+                UPDATE ${tableNames.messageTable} 
+                SET "type" = '${data["type"]}'
+                WHERE "message_id" = ${data["messageId"]} 
+                ;
+            `
+            );
         } catch (error) {
             console.log("READ TO DB ERROR ON CREATE CHAT");
             console.log(error);
+            res.status(400).send({ 'message': 'error updating message type' });
+            updateErrorOccured = true;
         }
+        if (data["type"] == 'accepted_proposal'){
+            try {
+                let chatTableQueryData = await doQuery(`
+                    SELECT performer_id,event_id FROM ${tableNames.chatTable} 
+                    WHERE "chat_id" = ${data["chatId"]} LIMIT 1 
+                    ;
+                `);
+                chatTableQueryData = chatTableQueryData.rows[0];
+    
+                if (chatTableQueryData['performer_id'] == undefined || chatTableQueryData['event_id'] == undefined){
+                    log('chatTableQueryData which gave an error');
+                    log(chatTableQueryData);
+                    throw `Found no chat with chat_id = ${data["chatId"]} with 
+                    chatTableQueryData['performer_id'] = ${chatTableQueryData['performer_id']}
+                    and chatTableQueryData['event_id'] = ${chatTableQueryData['event_id']}
+                    `;
+                }
+                doQuery(`
+                    UPDATE ${tableNames.eventTable} 
+                    SET "booked_artist_id" = '${chatTableQueryData['performer_id']}',
+                    "status" = 'booked pre-deposit'
+                    WHERE "event_id" = ${chatTableQueryData["event_id"]} 
+                    ;
+                `);
+            } catch (e) {
+                log('Error updating event type:');
+                log(e);
+                updateErrorOccured = true;
+            }
+        }
+        
+
         console.log('Done with Update Message');
-        res.send(data);
+        if (!updateErrorOccured) {
+            res.send(data);
+        }else{
+            res.status(400).send(data);
+        }
     });
 
 }
