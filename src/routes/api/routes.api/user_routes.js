@@ -2,6 +2,7 @@ const {doQuery,tableNames} = require("../../../configs/db.config");
 var bodyParser = require('body-parser')
 var jsonParser = bodyParser.json()
 const {log} = require('../../../configs/logging');
+const { redisSet } = require("../../../configs/redis");
 
 function apply_user_api_routes(app) {
     app.post('/api/login', jsonParser, async function (req, res, next) {
@@ -29,11 +30,13 @@ function apply_user_api_routes(app) {
                 if (user_read.rows[0]["user_is_organiser"] == true) {
                     req.session.organiserId = req.session.userId;// 1 day
                     // res.cookie('token', token, { expires });
+                    // redisSet(req.cookie,req.session);
 
                     res.status(200).json({ "isOrganiser": true, "message": "Logged in Successfully as Organiser" });
                 } else {
                     // res.cookie('token', 'cookie', { expires });
                     req.session.performerId = req.session.userId;
+                    // redisSet(req.cookie,req.session);
                     res.status(200).json({ "isOrganiser": false, "message": "Logged in Successfully as Performer" });
                 }
 
@@ -72,9 +75,9 @@ function apply_user_api_routes(app) {
                 await doQuery(q);
                 user_read = await doQuery(`SELECT user_id FROM ${tableNames.userTable} WHERE name = '${data["username"]}'`);
                 req.session.userId = user_read.rows[0]["user_id"];
-                const token = 'mytoken'; // Generate a unique token
-                const expires = new Date(Date.now() + 24 * 60 * 60 * 1000); 
-                res.cookie('token', token, { expires });
+                // const token = 'mytoken'; // Generate a unique token
+                // const expires = new Date(Date.now() + 24 * 60 * 60 * 1000); 
+                // res.cookie('token', token, { expires });
 
                 if (data["isOrganiser"] == "true") {
                     let id = user_read.rows[0]["user_id"];
@@ -99,6 +102,7 @@ function apply_user_api_routes(app) {
                 return;
             }
             console.log(`api/signup post request body inserted:`);
+            // redisSet(req.cookie,req.session);
             res.status(200).json({ "message": "Account Created" });
         }
     });

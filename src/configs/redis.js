@@ -11,9 +11,8 @@ let setValues = [
     'accountMediaZipFileName'
 ];
 
-async function initRedisClient () {
+async function initRedisClient (redisClient) {
     // redisClient = Redis.createClient({url:redisUrl});
-    redisClient = Redis.createClient();
     await redisClient.connect();
     redisClient.on('error', err => console.error('Redis Client Error', err));
 
@@ -35,8 +34,17 @@ function getClient(){
     return redisClient;
 }
 
+function redisSet(key,value){
+    redisClient.set(key,value);
+}
+function redisGet(key){
+    return redisClient.get(key);
+}
+
 exports.name = 'redis';
 module.exports ={
     initRedisClient:initRedisClient,
     getClient:getClient,
+    redisSet:redisSet,
+    redisGet:redisGet,
 }

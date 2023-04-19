@@ -2,12 +2,14 @@ const {doQuery,tableNames} = require("../../configs/db.config");
 var bodyParser = require('body-parser')
 var jsonParser = bodyParser.json()
 const {log} = require('../../configs/logging');
+const {redisGet,redisSet} = require('../../configs/redis');
 
 const {apply_event_api_routes} = require("./routes.api/event_routes");
 const {apply_chat_api_routes} = require("./routes.api/chat_routes");
 const {apply_message_api_routes} = require("./routes.api/message_routes");
 const {apply_user_api_routes} = require("./routes.api/user_routes");
 const {apply_account_api_routes} = require("./routes.api/account_routes");
+const session = require("express-session");
 
 
 
@@ -34,7 +36,9 @@ function pre_directory_routes(app){
     app.use(function (req, res, next) {
         // check if client sent cookie
         var cookie = req.cookies['connect.sid'];
-        if (cookie == undefined) {
+        
+        // if (cookie in session.MemoryStore.)
+        if (cookie == undefined || cookie == null) {
             console.log('No cookie with request: '+req.url);
             // console.log('Cookie: '+cookie);
         // // no: set a new cookie
@@ -45,11 +49,15 @@ function pre_directory_routes(app){
             if(req.url.includes('signup') || req.url.includes('login')){//only route permitted to not be signed in
                 next();
             }else{
-                res.json({"requiredSignIn":true});
+                res.header("requiredSignIn",true);
+                res.send();
             }
         } else {
-        // yes, cookie was already present 
-            // console.log('cookie exists', cookie);
+            console.log('cookie exists', cookie);
+            if(req.session == undefined ||req.session == null){
+                req.session.reload();
+            }
+
             // console.log('req headers');
             // console.log(req.headers);
             next(); // <-- important!
